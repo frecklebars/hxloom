@@ -1,0 +1,14 @@
+{
+	"name": "hxloom",
+	"url" : "https://github.com/frecklebars/hxloom",
+	"license": "MIT",
+	"tags": [],
+	"description": "HaXeLOOM",
+	"version": "0.0.1",
+	"classPath": "src/",
+	"releasenote": "",
+	"contributors": ["frecklebars"],
+	"dependencies": {
+        "heaps": ""
+    }
+}
