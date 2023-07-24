@@ -6,11 +6,13 @@ class Game extends hxd.App{
         super();
     }
 
+    private var scaleMode: h2d.Scene.ScaleMode = LetterBox(320, 200, true, Center, Center); // pixel-perfect scaling
     private var currentRoom: Room;
 
     public function setActiveRoom(room:Room){
         setScene(room);
         currentRoom = room;
+        currentRoom.scaleMode = scaleMode;
         currentRoom.init();
     }
 
