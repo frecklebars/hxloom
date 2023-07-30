@@ -7,19 +7,20 @@ class Game extends hxd.App{
     }
 
     private var scaleMode: h2d.Scene.ScaleMode = LetterBox(320, 200, true, Center, Center); // pixel-perfect scaling
-    private var currentRoom: Room;
+    public var activeRoom(default, null): Room;
 
     public function setActiveRoom(room:Room){
         setScene(room);
-        currentRoom = room;
-        currentRoom.scaleMode = scaleMode;
-        currentRoom.init();
+        activeRoom = room;
+        activeRoom.scaleMode = scaleMode;
+        activeRoom.filter = new h2d.filter.Nothing();
+        activeRoom.init();
     }
 
     override function init(){}
 
     override function update(dt:Float){
-        if(currentRoom != null) currentRoom.update(dt);
+        if(activeRoom != null) activeRoom.update(dt);
     }
 
 }
