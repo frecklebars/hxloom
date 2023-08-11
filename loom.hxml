@@ -3,3 +3,6 @@
 --library heaps
 --library hlsdl
 
+-hl loom.hl
+
+-D debug
