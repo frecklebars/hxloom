@@ -23,9 +23,5 @@ class Room extends h2d.Scene {
     public function update(dt:Float){
         UpdateUtils.updateAll(dt, entities);
     }
-
-    // TODO: add persistence later?
-    // override function dispose(){
-    //     super.dispose();
-    // }
+    
 }

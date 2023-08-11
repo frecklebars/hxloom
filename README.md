@@ -1,4 +1,4 @@
-# HaXeLOOM
+# hxLOOM
 Library built on top of Haxe/Heaps
 
 
