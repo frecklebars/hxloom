@@ -7,7 +7,6 @@ class Entity extends h2d.Object implements Updateable{
     public var components: UpdateableComponents = [];
 
     public var room: Room;
-    public var previousRoom: Room;
     
     public function new(name: String, room: Room){
         super();
@@ -15,7 +14,6 @@ class Entity extends h2d.Object implements Updateable{
         this.name = name;
         this.enabled = true;
         this.room = room;
-        this.previousRoom = null;
     }
 
     public function addComponent(component: Component){
