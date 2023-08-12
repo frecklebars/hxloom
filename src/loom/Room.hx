@@ -4,8 +4,8 @@ import loom.utils.UpdateUtils;
 
 class Room extends h2d.Scene {
 
-    @:allow(loom.Game)
-    public var game(default, null): Game;
+    // @:allow(loom.Game)
+    // public var game(default, null): Game;
 
     private var background: h2d.Bitmap;
     public var roomWidth(default, null): Int;
@@ -18,7 +18,7 @@ class Room extends h2d.Scene {
 
         var bgTile;
         if(bgTilePath == null){ // TODO remove later after adding from json loading?
-            bgTile = h2d.Tile.fromColor(0x000000, game.resolutionW, game.resolutionH);
+            bgTile = h2d.Tile.fromColor(0x000000, 320, 200);
         }
         else{
             bgTile = hxd.Res.loader.load(bgTilePath).toTile();
