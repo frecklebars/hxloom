@@ -46,9 +46,24 @@ abstract Color(Int) from Int to Int {
         return this;
     }
     
+    public static function fromHexRGB(c: Int){
+        var c: Color = (c & 0xFFFFFF);
+        c.alpha = 255;
+        return c;
+    }
+    
+    public static function fromHexARGB(c: Int){
+        var c: Color = (c & 0xFFFFFFFF);
+        return c;
+    }
+    
+    public static function fromHexRGBA(c: Int){
+        var c: Color = (c & 0xFFFFFFFF);
+        var a = (c & 0x000000FF);
+        c = c >> 8;
+        c.alpha = a;
+        return c;
 
-    public inline function new(c:Int){
-        this = c & 0xFFFFFFFF;
     }
 
     public static function fromValues(r: Int = 255, g: Int = 255, b: Int = 255, a: Int = 255): Color{
