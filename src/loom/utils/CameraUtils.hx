@@ -20,6 +20,7 @@ class CameraConfig {
 
         if(margins == null) this.margins = {top: 0, bottom: 0, left: 0, right: 0};
         else                this.margins = margins;
+        
         #if debug
         this.drawer = new h2d.Graphics(room);
         #end

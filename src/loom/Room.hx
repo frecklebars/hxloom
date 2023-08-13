@@ -1,5 +1,7 @@
 package loom;
 
+import loom.Color;
+
 import loom.utils.UpdateUtils;
 
 class Room extends h2d.Scene {
@@ -18,7 +20,7 @@ class Room extends h2d.Scene {
 
         var bgTile;
         if(bgTilePath == null){ // TODO remove later after adding from json loading?
-            bgTile = h2d.Tile.fromColor(0x000000, 320, 200);
+            bgTile = h2d.Tile.fromColor(new Color(0xFF000000), 320, 200);
         }
         else{
             bgTile = hxd.Res.loader.load(bgTilePath).toTile();
