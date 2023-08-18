@@ -1,15 +1,12 @@
 package loom;
 
 import loom.Color;
-
 import loom.utils.UpdateUtils;
 
 class Room extends h2d.Scene {
 
-    // @:allow(loom.Game)
-    // public var game(default, null): Game;
-
     private var background: h2d.Bitmap;
+    
     public var roomWidth(default, null): Int;
     public var roomHeight(default, null): Int;
     public var entities: UpdateableEntities = [];
@@ -33,11 +30,11 @@ class Room extends h2d.Scene {
         background.blendMode = h2d.BlendMode.None;
     }
 
-    public function addEntity(entity: Entity){
+    public function addEntity(entity: Entity, initialise: Bool = false){
         entities.set(entity.name, entity);
         addChild(entity);
 
-        entity.init();
+        if(initialise) entity.init();
     }
 
     
