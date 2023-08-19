@@ -2,7 +2,9 @@
 
 --library heaps
 --library hlsdl
+--library heaps-aseprite
 
+--no-output
 -hl loom.hl
 
 -D debug
