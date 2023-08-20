@@ -4,7 +4,7 @@ typedef UpdateableEntities = Map<String, Entity>;
 typedef UpdateableComponents = Map<String, Component>;
 
 interface Updateable {
-    public var enabled: Bool;
+    public var enabled(default, null): Bool;
     public function update(dt:Float): Void;
 }
 

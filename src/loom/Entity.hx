@@ -2,13 +2,13 @@ package loom;
 
 import loom.utils.UpdateUtils;
 
-class Entity extends h2d.Object implements Updateable{
-    public var enabled: Bool;
+abstract class Entity extends h2d.Object implements Updateable{
+    public var enabled(default, null): Bool; // TODO handle enabling
     public var components: UpdateableComponents = [];
 
     public var room: Room;
     
-    public function new(name: String, room: Room){
+    public function new(room: Room, name: String){
         super();
 
         this.name = name;

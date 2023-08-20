@@ -4,8 +4,9 @@ import loom.utils.UpdateUtils;
 
 class Component implements Updateable{
     public var name: String;
-    public var enabled: Bool;
     public var parent: Entity;
+
+    public var enabled(default, null): Bool;
 
     public function new(name: String){
         this.name = name;
