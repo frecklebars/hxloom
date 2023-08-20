@@ -1,33 +1,26 @@
 package loom;
 
-import loom.Color;
+import loom.config.TypedConfig.RoomConfig;
 import loom.utils.UpdateUtils;
+
+typedef RoomDimensions = {width: Int, height: Int};
 
 class Room extends h2d.Scene {
 
-    private var background: h2d.Bitmap;
     
-    public var roomWidth(default, null): Int;
-    public var roomHeight(default, null): Int;
+    private var background: Background;
+    
+    public var dimensions(default, null): RoomDimensions;
     public var entities: UpdateableEntities = [];
-
-    public function new(name: String, bgTilePath: String){
+    
+    public function new(configPath: String){
+        var config: RoomConfig = loom.config.Config.loadConfig(configPath);
+        
         super();
-        this.name = name;
+        this.name = config.name;
 
-        var bgTile;
-        if(bgTilePath == null){ // TODO remove later after adding from json loading?
-            bgTile = h2d.Tile.fromColor(Color.fromHexRGB(0x000000), 320, 200);
-        }
-        else{
-            bgTile = hxd.Res.loader.load(bgTilePath).toTile();
-        }
-
-        roomWidth = Std.int(bgTile.width);
-        roomHeight = Std.int(bgTile.height);
-
-        background = new h2d.Bitmap(bgTile, this);
-        background.blendMode = h2d.BlendMode.None;
+        background = Background.fromPng(this, config.background);
+        dimensions = background.getDimensions();
     }
 
     public function addEntity(entity: Entity, initialise: Bool = false){

@@ -11,9 +11,9 @@ class Sprite extends aseprite.AseAnim {
     private var animations: Map<String, Animation> = [];
     public var currentAnim(default, null): String;
 
-    public function new(spritePath: String, parent: Entity){
+    public function new(parent: Entity, spritePath: String){
         super(parent);
-        
+    
         sprite = hxd.Res.loader.load(spritePath).to(aseprite.res.Aseprite).toAseprite();
     }
 
