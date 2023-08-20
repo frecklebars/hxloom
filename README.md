@@ -1,10 +1,8 @@
-# hxLOOM
-Library built on top of Haxe/Heaps
+# LOOM
+Point and click adventure game engine built with Haxe/Heaps
 
+![lookout](https://boxd.freckleskies.net/oldlookout.png)
 
-
-## Installation
-Depends on [heaps](https://github.com/HeapsIO/heaps): [git]
-```
-haxelib git heaps https://github.com/HeapsIO/heaps.git
-```
+## Dependencies
+- [heaps](https://github.com/HeapsIO/heaps): [git]
+- [heaps-aseprite](https://github.com/AustinEast/heaps-aseprite): [0.1.2]
