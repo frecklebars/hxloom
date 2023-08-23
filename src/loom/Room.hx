@@ -15,7 +15,13 @@ class Room extends h2d.Scene {
     
     public var dimensions(default, null): RoomDimensions;
     public var entities: UpdateableEntities = [];
-    
+
+    private var walkArea: h2d.col.Polygon;
+
+    #if debug
+    public var drawer: h2d.Graphics;
+    #end
+
     public function new(configPath: String){
         var config: RoomConfig = loom.config.Config.loadConfig(configPath);
         
@@ -27,8 +33,21 @@ class Room extends h2d.Scene {
             propAtlas = loom.config.Config.loadMultipleConfig(config.propAtlas);
         }
 
+        if(config.walkArea != null){
+            var waPoints = new Array<h2d.col.Point>();
+            for (point in config.walkArea.points){
+                waPoints.push(new h2d.col.Point(point.x, point.y));
+            }
+            walkArea = new h2d.col.Polygon(waPoints);
+        }
+
         background = Background.fromPng(this, config.background);
         dimensions = background.getDimensions();
+
+        #if debug
+        drawer = new h2d.Graphics();
+        add(drawer, 40);
+        #end
     }
 
     public function addEntity(entity: Entity, initialise: Bool = true, layer: Int = 4){
@@ -50,5 +69,4 @@ class Room extends h2d.Scene {
         UpdateUtils.updateAll(dt, entities);
         ysort(4);
     }
-    
 }

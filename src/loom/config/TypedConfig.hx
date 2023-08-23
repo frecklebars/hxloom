@@ -1,5 +1,7 @@
 package loom.config;
 
+typedef Point = {x: Int, y: Int}
+
 typedef BaseConfig = {
     var name: String;
     var display: String;
@@ -18,8 +20,15 @@ typedef ProtagonistConfig = {
     > SpriteConfig,
 }
 
+typedef WalkAreaConfig = {
+    var walkArea: {
+        var points: Array<Point>;
+    }
+}
+
 typedef RoomConfig = {
     > BaseConfig,
+    > WalkAreaConfig,
     var background: String;
     var propAtlas: String;
 }
@@ -27,7 +36,7 @@ typedef RoomConfig = {
 typedef PropConfig = {
     > BaseConfig,
     > SpriteConfig,
-    var position: {x: Int, y: Int};
+    var position: Point;
 }
 
 typedef ActorConfig = {
