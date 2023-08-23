@@ -1,5 +1,7 @@
 package loom;
 
+import loom.config.TypedConfig.SpriteConfig;
+
 typedef Animation = {
     frames: Array<aseprite.Aseprite.AsepriteFrame>,
     loop: Bool
@@ -11,10 +13,24 @@ class Sprite extends aseprite.AseAnim {
     private var animations: Map<String, Animation> = [];
     public var currentAnim(default, null): String;
 
-    public function new(parent: Entity, spritePath: String){
+    private var bitmap: h2d.Bitmap;
+
+    public function new(parent: Entity, config: SpriteConfig){
         super(parent);
     
-        sprite = hxd.Res.loader.load(spritePath).to(aseprite.res.Aseprite).toAseprite();
+        sprite = hxd.Res.loader.load(config.sprite.path).to(aseprite.res.Aseprite).toAseprite();
+
+        if(config.sprite.animations == null){
+            bitmap = new h2d.Bitmap(sprite.toTile(), parent);
+            bitmap.tile.dx = -Std.int(bitmap.tile.width * 0.5);
+            bitmap.tile.dy = -Std.int(bitmap.tile.height);
+        }
+        else{
+            for(animation in config.sprite.animations){
+                registerAnimation(animation.tag, animation.loop);
+            }
+        }
+
     }
 
     public function registerAnimation(tag:String, ?loop:Bool = true){

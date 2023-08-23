@@ -20,5 +20,4 @@ class Component implements Updateable{
 
     public function init(){}
     public function update(dt:Float){}
-
 }

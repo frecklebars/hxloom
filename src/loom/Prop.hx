@@ -6,19 +6,22 @@ class Prop extends Entity {
 
     public var sprite: Sprite;
     
-    public function new(room: Room, configPath: String, ?config: PropConfig){
+    public function new(configPath: String, ?config: PropConfig){
         if(config == null){
             config = loom.config.Config.loadConfig(configPath);
         }
 
-        super(room, config.name);
+        super(config.name);
+
+        if(config.display != null) displayName = config.display;
+
+        if(config.position != null){
+            x = config.position.x;
+            y = config.position.y;
+        }
 
         if(config.sprite != null){
-            sprite = new loom.Sprite(this, config.sprite.path);
-            
-            for(animation in config.sprite.animations){
-                sprite.registerAnimation(animation.tag, animation.loop);
-            }
+            sprite = new loom.Sprite(this, config);
         }
     }
 

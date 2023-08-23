@@ -4,7 +4,7 @@ import loom.config.TypedConfig.ActorConfig;
 
 class Actor extends Prop {
 
-    public function new(room: Room, configPath: String) {
+    public function new(?room: Room, configPath: String) {
         var config: ActorConfig = loom.config.Config.loadConfig(configPath);
 
         /**

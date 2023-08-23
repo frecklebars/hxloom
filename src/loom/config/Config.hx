@@ -10,4 +10,9 @@ class Config {
         return Json.parse(configText);
     }
 
+    public static function loadMultipleConfig<T>(configPath: String): haxe.DynamicAccess<T> {
+        var configText: String = hxd.Res.loader.load(configPath).toText();
+        return Json.parse(configText);
+    }
+
 }

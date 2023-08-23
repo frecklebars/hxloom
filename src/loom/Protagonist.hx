@@ -6,18 +6,15 @@ class Protagonist extends Entity {
 
     private var sprite: Sprite;
     
-    public function new(room: Room, configPath: String){
+    public function new(configPath: String){
         var config: ProtagonistConfig;
         config = loom.config.Config.loadConfig(configPath);
 
-        super(room, config.name);
+        super(config.name);
+        if(config.display != null) displayName = config.display;
 
         if(config.sprite != null){
-            sprite = new loom.Sprite(this, config.sprite.path);
-            
-            for(animation in config.sprite.animations){
-                sprite.registerAnimation(animation.tag, animation.loop);
-            }
+            sprite = new loom.Sprite(this, config);
         }
     }
 

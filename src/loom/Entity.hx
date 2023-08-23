@@ -3,17 +3,19 @@ package loom;
 import loom.utils.UpdateUtils;
 
 abstract class Entity extends h2d.Object implements Updateable{
-    public var enabled(default, null): Bool; // TODO handle enabling
-    public var components: UpdateableComponents = [];
-
-    public var room: Room;
+    public var room(default, null): Room;
     
-    public function new(room: Room, name: String){
+    public var enabled(default, null): Bool; // TODO handle enabling/disabling
+    public var components: UpdateableComponents = [];
+    
+    public var displayName: String = "";
+    
+    public function new(name: String, ?room: Room){
         super();
 
         this.name = name;
         this.enabled = true;
-        this.room = room;
+        if(room != null) changeRoom(room);
     }
 
     public function addComponent(component: Component){
@@ -21,6 +23,10 @@ abstract class Entity extends h2d.Object implements Updateable{
         component.parent = this;
 
         component.init();
+    }
+
+    public function changeRoom(room: Room){
+        this.room = room;
     }
 
     public function init(){}

@@ -12,14 +12,14 @@ class Game extends hxd.App{
         super();
     }
     
-    public function setActiveRoom(room:Room){
+    public function setActiveRoom(room:Room, initialise: Bool = false){
         setScene(room);
         activeRoom = room;
         
         activeRoom.scaleMode = scaleMode;
         activeRoom.filter = new h2d.filter.Nothing();
         
-        activeRoom.init();
+        if(initialise) activeRoom.init();
     }
     
     override function init(){
