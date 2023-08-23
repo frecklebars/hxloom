@@ -37,8 +37,8 @@ class CameraUtils {
     **/
     public static function boundedFollowPlayer(cc: CameraConfig) {
 
-        var maxX = cc.room.roomWidth;
-        var maxY = cc.room.roomHeight;
+        var maxX = cc.room.dimensions.width;
+        var maxY = cc.room.dimensions.height;
 
         var targetPosRelToCamera = new h2d.col.Point(cc.focus.x, cc.focus.y);
         cc.camera.cameraToScene(targetPosRelToCamera);
