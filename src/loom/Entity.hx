@@ -18,11 +18,13 @@ abstract class Entity extends h2d.Object implements Updateable{
         if(room != null) changeRoom(room);
     }
 
-    public function addComponent(component: Component){
+    public function addComponent(component: Component): Component{
         components.set(component.name, component);
         component.parent = this;
 
         component.init();
+
+        return component;
     }
 
     public function changeRoom(room: Room){

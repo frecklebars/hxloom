@@ -16,7 +16,7 @@ class Room extends h2d.Scene {
     public var dimensions(default, null): RoomDimensions;
     public var entities: UpdateableEntities = [];
 
-    private var walkArea: h2d.col.Polygon;
+    public var walkArea: h2d.col.Polygon;
 
     #if debug
     public var drawer: h2d.Graphics;

@@ -23,6 +23,7 @@ typedef ProtagonistConfig = {
 typedef WalkAreaConfig = {
     var walkArea: {
         var points: Array<Point>;
+        var exclusion: Array<Array<Point>>;
     }
 }
 
