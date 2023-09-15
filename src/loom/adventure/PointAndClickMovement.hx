@@ -35,14 +35,17 @@ class PointAndClickMovement extends Component {
     private var openNodes: Array<AstarNode>;
     private var visitedNodes: Array<AstarNode>;
 
-    private var walking: Bool = false;
+    public var walking: Bool = false;
 
     public function new(name: String = "pointandclickmovement") {
         super(name);
     }
 
-    private function makeGraph(walkArea: h2d.col.Polygon){
+    private function makeGraph(walkArea: h2d.col.Polygon, exclusionAreas: Array<h2d.col.Polygon>){
         var concavePoints = Math.getConcavePoints(walkArea);
+        for(exclArea in exclusionAreas){
+            concavePoints = concavePoints.concat(Math.getConvexPoints(exclArea));
+        }
         concavePoints.push(goal);
         concavePoints.insert(0, start);
 
@@ -51,7 +54,7 @@ class PointAndClickMovement extends Component {
                 var point1: h2d.col.Point = concavePoints[i];
                 var point2: h2d.col.Point = concavePoints[j];
 
-                if(Math.pointInLineOfSight(walkArea, point1, point2)){
+                if(Math.pointInLineOfSight([walkArea].concat(exclusionAreas), point1, point2)){
                     var apoint1: AstarNode;
                     var apoint2: AstarNode;
                     
@@ -113,7 +116,7 @@ class PointAndClickMovement extends Component {
     }
 
     private function calculatePath(){
-        while(true){
+        while(openNodes.length > 0){
             currentNode = nextActiveNode();
             visitedNodes.push(currentNode);
 
@@ -123,12 +126,13 @@ class PointAndClickMovement extends Component {
                 var neighborNode: AstarNode = graph[neighbor.id];
                 if(visitedNodes.contains(neighborNode)) continue;
 
+                neighborNode.distFromStart = currentNode.distFromStart + neighbor.distance;
                 if(neighborNode.distFromStart < currentNode.distFromStart || !openNodes.contains(neighborNode)){
-                    neighborNode.distFromStart = currentNode.distFromStart + neighbor.distance;
                     neighborNode.parent = currentNode.id;
                     if(!openNodes.contains(neighborNode)) openNodes.push(neighborNode);
                 }
             }
+
         }
     }
 
@@ -142,7 +146,7 @@ class PointAndClickMovement extends Component {
         var smallestF: Float = 999999999;
 
         for (node in openNodes){
-            var fVal: Float = node.distToGoal + node.distFromStart;
+            var fVal: Float = node.distFromStart + node.distToGoal;
             if(fVal < smallestF){
                 nextNode = node;
                 smallestF = fVal;
@@ -177,27 +181,24 @@ class PointAndClickMovement extends Component {
             graph = [];
             graphIds = [];
             
-            makeGraph(parent.room.walkArea);
+            makeGraph(parent.room.walkArea, parent.room.exclusionAreas);
             
             openNodes = [graph[0]];
             
             calculatePath();
             var path: Array<AstarNode> = getComputedPath();
 
-
-            drawGraph();
+            drawGraph(0x101);
         }
     }
 
     #if debug
-    public function drawGraph(mode: Int = 0x11){
+    public function drawGraph(mode: Int = 0x111){
         parent.room.drawer.clear();
-        loom.utils.RoomUtils.drawWalkArea(parent.room, parent.room.walkArea, 0x100);
-        if(mode & 0x10 == 0x10) drawGraphNodes();
-        if(mode & 0x01 == 0x01){
-            drawGraphEdges();
-            if(graph.length > 1) drawComputedPath();
-        }
+        loom.utils.RoomUtils.drawWalkArea(parent.room, parent.room.walkArea, parent.room.exclusionAreas, 0x010100);
+        if(mode & 0x010 == 0x010) drawGraphEdges();
+        if(mode & 0x100 == 0x100) drawGraphNodes();
+        if(mode & 0x001 == 0x001 && graph.length > 1) drawComputedPath();
     }
 
     public function drawGraphNodes(color: Color = 0x0000FF, clear: Bool = false){
@@ -229,7 +230,7 @@ class PointAndClickMovement extends Component {
         }
     }
 
-    public function drawComputedPath(color: Color = 0x00FFFF, clear: Bool = false){
+    public function drawComputedPath(color: Color = 0xFF00FF, clear: Bool = false){
         var drawer: h2d.Graphics = parent.room.drawer;
         if(clear) drawer.clear();
         drawer.lineStyle(1, color);
@@ -239,6 +240,10 @@ class PointAndClickMovement extends Component {
             drawer.moveTo(node.x, node.y);
             node = graph[node.parent];
             drawer.lineTo(node.x, node.y);
+
+            drawer.lineStyle(1, 0xFF0000);
+            drawer.drawRect(node.x-1, node.y-1, 3, 3);
+            drawer.lineStyle(1, color);
         }
     }
     #end

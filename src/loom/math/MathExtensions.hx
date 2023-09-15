@@ -36,6 +36,7 @@ function getConcavePoints(cl:Class<Math>, points: Array<h2d.col.Point>, invert: 
 }
 
 function getConvexPoints(cl:Class<Math>, points: Array<Point>): Array<Point> {
+    if(points.length <= 3) return points;
     return getConcavePoints(cl, points, true);
 }
 
@@ -58,18 +59,26 @@ function linesIntersect(cl:Class<Math>, p1: Point, p2: Point, q1: Point, q2: Poi
     return (r > 0 && r < 1) && (s > 0 && s < 1);
 }
 
-function pointInLineOfSight(cl:Class<Math>, polygon: Polygon, start: Point, end: Point): Bool {
+function pointInLineOfSight(cl:Class<Math>, polygons: Array<Polygon>, start: Point, end: Point): Bool {
     // not in LOS if any of the ends is outside the polygon
-    if(!polygon.contains(start) || !polygon.contains(end)) return false;
+    if(!polygons[0].contains(start) || !polygons[0].contains(end)) return false;
     if(start == end) return false;
 
-    for (i in 0...polygon.points.length) {
-        var v1 = polygon.points[i];
-        var v2 = polygon.points[(i+1) % polygon.points.length];
+    for (polygon in polygons){
+        for (i in 0...polygon.points.length) {
+            var v1 = polygon.points[i];
+            var v2 = polygon.points[(i+1) % polygon.points.length];
+            
+            if(linesIntersect(cl, start, end, v1, v2)) return false;
+        }
+    }
+    
+    var middle = new Point((start.x + end.x)/2, (start.y + end.y)/2);
+    var inside: Bool = polygons[0].contains(middle);
 
-        if(linesIntersect(cl, start, end, v1, v2)) return false;
+    for (i in 1...polygons.length){
+        if(polygons[i].contains(middle)) return false;
     }
 
-    var middle = new Point((start.x + end.x)/2, (start.y + end.y)/2);
-    return polygon.contains(middle);
+    return inside;
 }

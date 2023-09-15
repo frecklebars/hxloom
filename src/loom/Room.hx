@@ -17,6 +17,7 @@ class Room extends h2d.Scene {
     public var entities: UpdateableEntities = [];
 
     public var walkArea: h2d.col.Polygon;
+    public var exclusionAreas: Array<h2d.col.Polygon>;
 
     #if debug
     public var drawer: h2d.Graphics;
@@ -39,6 +40,17 @@ class Room extends h2d.Scene {
                 waPoints.push(new h2d.col.Point(point.x, point.y));
             }
             walkArea = new h2d.col.Polygon(waPoints);
+
+            if(config.walkArea.exclusion != null){
+                exclusionAreas = [];
+                for (exclusion in config.walkArea.exclusion){
+                    var exclPoints = new Array<h2d.col.Point>();
+                    for (point in exclusion){
+                        exclPoints.push(new h2d.col.Point(point.x, point.y));
+                    }
+                    exclusionAreas.push(exclPoints);
+                }
+            }
         }
 
         background = Background.fromPng(this, config.background);

@@ -42,5 +42,5 @@ typedef PropConfig = {
 
 typedef ActorConfig = {
     > PropConfig,
-    var dialogue: String; // TODO actually handle dialogue; this is just to differentiate it from PropConfig
+    var dialogue: String; // TODO actually handle dialogue; this is just to differentiate it from PropConfig temporarily
 }
