@@ -4,7 +4,7 @@ import loom.config.TypedConfig.ProtagonistConfig;
 
 class Protagonist extends Entity {
 
-    private var sprite: Sprite;
+    public var sprite: Sprite;
     
     public function new(configPath: String){
         var config: ProtagonistConfig;

@@ -122,6 +122,13 @@ class RoomUtils {
         else if(Key.isPressed(Key.MOUSE_WHEEL_DOWN) || Key.isPressed(Key.NUMBER_1)){
             activeNode = (exclusionAreas[activeExclusion].length + activeNode - 1) % exclusionAreas[activeExclusion].length;
         }
+        else if(Key.isPressed(Key.QWERTY_EQUALS)){
+            exclusionAreas.insert(activeExclusion, new Polygon([new Point(room.mouseX, room.mouseY)]));
+        }
+        else if(Key.isPressed(Key.QWERTY_MINUS)){
+            exclusionAreas.remove(exclusionAreas[activeExclusion]);
+            if(activeExclusion == exclusionAreas.length) activeExclusion--;
+        }
         else if(Key.isPressed(Key.F)){
             exclusionAreas[activeExclusion].reverse();
         }

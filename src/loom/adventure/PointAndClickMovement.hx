@@ -3,13 +3,16 @@ package loom.adventure;
 using hxd.Key;
 using loom.math.MathExtensions;
 
-class AstarNode extends h2d.col.Point {
+using h2d.col.Polygon;
+using h2d.col.Point;
+
+class AstarNode extends Point {
     public var id: Int;
     public var neighbors: Array<{id: Int, distance: Float}> = [];
 
     public var parent: Int = -1;
     
-    public var distFromStart: Float = 999999999;
+    public var distFromStart: Float = 0;
     public var distToGoal: Float;
 
     override public function new(id: Int, x: Float, y: Float) {
@@ -29,6 +32,7 @@ class PointAndClickMovement extends Component {
     
     private var start: AstarNode;
     private var goal: AstarNode;
+    private var path: Array<AstarNode> = [];
 
     private var currentNode: AstarNode;
 
@@ -36,12 +40,15 @@ class PointAndClickMovement extends Component {
     private var visitedNodes: Array<AstarNode>;
 
     public var walking: Bool = false;
+    public var speed: Int = 100;
+
+    private var walkingDir: Point;
 
     public function new(name: String = "pointandclickmovement") {
         super(name);
     }
 
-    private function makeGraph(walkArea: h2d.col.Polygon, exclusionAreas: Array<h2d.col.Polygon>){
+    private function makeGraph(walkArea: Polygon, exclusionAreas: Array<Polygon>){
         var concavePoints = Math.getConcavePoints(walkArea);
         for(exclArea in exclusionAreas){
             concavePoints = concavePoints.concat(Math.getConvexPoints(exclArea));
@@ -51,8 +58,8 @@ class PointAndClickMovement extends Component {
 
         for (i in 0...concavePoints.length-1){
             for (j in i...concavePoints.length){
-                var point1: h2d.col.Point = concavePoints[i];
-                var point2: h2d.col.Point = concavePoints[j];
+                var point1: Point = concavePoints[i];
+                var point2: Point = concavePoints[j];
 
                 if(Math.pointInLineOfSight([walkArea].concat(exclusionAreas), point1, point2)){
                     var apoint1: AstarNode;
@@ -118,16 +125,19 @@ class PointAndClickMovement extends Component {
     private function calculatePath(){
         while(openNodes.length > 0){
             currentNode = nextActiveNode();
-            visitedNodes.push(currentNode);
-
+            
             if(currentNode == goal) break;
+
+            visitedNodes.push(currentNode);
 
             for (neighbor in currentNode.neighbors){
                 var neighborNode: AstarNode = graph[neighbor.id];
                 if(visitedNodes.contains(neighborNode)) continue;
 
-                neighborNode.distFromStart = currentNode.distFromStart + neighbor.distance;
-                if(neighborNode.distFromStart < currentNode.distFromStart || !openNodes.contains(neighborNode)){
+                var cost = currentNode.distFromStart + neighbor.distance;
+
+                if(neighborNode.distFromStart < cost || !openNodes.contains(neighborNode)){
+                    neighborNode.distFromStart = cost;
                     neighborNode.parent = currentNode.id;
                     if(!openNodes.contains(neighborNode)) openNodes.push(neighborNode);
                 }
@@ -143,7 +153,7 @@ class PointAndClickMovement extends Component {
         if(openNodes.length <= 1) return openNodes.shift();
 
         var nextNode: AstarNode = null;
-        var smallestF: Float = 999999999;
+        var smallestF: Float = 9999999999;
 
         for (node in openNodes){
             var fVal: Float = node.distFromStart + node.distToGoal;
@@ -163,6 +173,7 @@ class PointAndClickMovement extends Component {
         while(path[0].parent != -1){
             path.insert(0, graph[path[0].parent]);
         }
+        path.shift();
 
         return path;
     }
@@ -186,9 +197,30 @@ class PointAndClickMovement extends Component {
             openNodes = [graph[0]];
             
             calculatePath();
-            var path: Array<AstarNode> = getComputedPath();
+            path = getComputedPath();
+            walking = true;
+            walkingDir = Math.getDirection(new Point(parent.x, parent.y), path[0]);
+            drawGraph(0x111);
+        }
 
-            drawGraph(0x101);
+        if(walking){
+            var parentPoint: Point = new Point(parent.x, parent.y);
+            var distance: Float = path[0].distanceSq(parentPoint);
+            if(distance < 1){
+                path.shift();
+                if(path.length > 0){
+                    walkingDir = Math.getDirection(parentPoint, path[0]);
+                }
+                else{
+                    walking = false;
+                    parent.x = goal.x;
+                    parent.y = goal.y;
+                }
+            }
+            else{
+                parent.x += (walkingDir.x * speed * dt);
+                parent.y += (walkingDir.y * speed * dt);
+            }
         }
     }
 
