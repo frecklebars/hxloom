@@ -12,8 +12,8 @@ class AstarNode extends Point {
 
     public var parent: Int = -1;
     
-    public var distFromStart: Float = 0;
-    public var distToGoal: Float;
+    public var distFromStart: Float = 999_999_999;
+    public var distToGoal: Float = 999_999_999;
 
     override public function new(id: Int, x: Float, y: Float) {
         super(x, y);
@@ -40,7 +40,7 @@ class PointAndClickMovement extends Component {
     private var visitedNodes: Array<AstarNode>;
 
     public var walking: Bool = false;
-    public var speed: Int = 100;
+    public var speed: Int = 60;
 
     private var walkingDir: Point;
 
@@ -122,11 +122,23 @@ class PointAndClickMovement extends Component {
         return null;
     }
 
-    private function calculatePath(){
+    private function calculatePath(goalX: Float, goalY: Float){
+        visitedNodes = [];
+        start = new AstarNode(-1, parent.x, parent.y);
+        start.distFromStart = 0;
+        goal = new AstarNode(-2, goalX, goalY);
+        graph = [];
+        graphIds = [];
+        
+        makeGraph(parent.room.walkArea, parent.room.exclusionAreas);
+        
+        openNodes = [graph[0]];
+
         while(openNodes.length > 0){
-            currentNode = nextActiveNode();
-            
-            if(currentNode == goal) break;
+            haxe.ds.ArraySort.sort(openNodes, function(a, b): Int {return Std.int((a.distFromStart + a.distToGoal) - (b.distFromStart + b.distToGoal));});
+            currentNode = openNodes.shift();
+
+            // if(currentNode == goal) break;
 
             visitedNodes.push(currentNode);
 
@@ -134,37 +146,17 @@ class PointAndClickMovement extends Component {
                 var neighborNode: AstarNode = graph[neighbor.id];
                 if(visitedNodes.contains(neighborNode)) continue;
 
-                var cost = currentNode.distFromStart + neighbor.distance;
+                var tentativeCost: Float = currentNode.distFromStart + neighbor.distance;
 
-                if(neighborNode.distFromStart < cost || !openNodes.contains(neighborNode)){
-                    neighborNode.distFromStart = cost;
+                if(neighborNode.distFromStart > tentativeCost || !openNodes.contains(neighborNode)){
+                    neighborNode.distFromStart = tentativeCost;
                     neighborNode.parent = currentNode.id;
+
                     if(!openNodes.contains(neighborNode)) openNodes.push(neighborNode);
                 }
             }
 
         }
-    }
-
-    /**
-        Find node with smallest f(x) in openNodes
-    **/
-    private function nextActiveNode(): AstarNode{
-        if(openNodes.length <= 1) return openNodes.shift();
-
-        var nextNode: AstarNode = null;
-        var smallestF: Float = 9999999999;
-
-        for (node in openNodes){
-            var fVal: Float = node.distFromStart + node.distToGoal;
-            if(fVal < smallestF){
-                nextNode = node;
-                smallestF = fVal;
-            }
-        }
-
-        openNodes.remove(nextNode);
-        return nextNode;
     }
 
     function getComputedPath(): Array<AstarNode>{
@@ -186,17 +178,8 @@ class PointAndClickMovement extends Component {
         super.update(dt);
 
         if(Key.isPressed(Key.MOUSE_LEFT)){
-            visitedNodes = [];
-            start = new AstarNode(-1, Std.int(parent.x), Std.int(parent.y));
-            goal = new AstarNode(-2, Std.int(parent.room.mouseX), Std.int(parent.room.mouseY));
-            graph = [];
-            graphIds = [];
             
-            makeGraph(parent.room.walkArea, parent.room.exclusionAreas);
-            
-            openNodes = [graph[0]];
-            
-            calculatePath();
+            calculatePath(parent.room.mouseX, parent.room.mouseY);
             path = getComputedPath();
             walking = true;
             walkingDir = Math.getDirection(new Point(parent.x, parent.y), path[0]);
@@ -227,7 +210,7 @@ class PointAndClickMovement extends Component {
     #if debug
     public function drawGraph(mode: Int = 0x111){
         parent.room.drawer.clear();
-        loom.utils.RoomUtils.drawWalkArea(parent.room, parent.room.walkArea, parent.room.exclusionAreas, 0x010100);
+        // loom.utils.RoomUtils.drawWalkArea(parent.room, parent.room.walkArea, parent.room.exclusionAreas, 0x010100);
         if(mode & 0x010 == 0x010) drawGraphEdges();
         if(mode & 0x100 == 0x100) drawGraphNodes();
         if(mode & 0x001 == 0x001 && graph.length > 1) drawComputedPath();

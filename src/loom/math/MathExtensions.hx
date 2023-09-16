@@ -59,17 +59,19 @@ function linesIntersect(cl:Class<Math>, p1: Point, p2: Point, q1: Point, q2: Poi
     return (r > 0 && r < 1) && (s > 0 && s < 1);
 }
 
-function pointInLineOfSight(cl:Class<Math>, polygons: Array<Polygon>, start: Point, end: Point): Bool {
+function pointInLineOfSight(cl:Class<Math>, polygons: Array<Polygon>, start: Point, end: Point, tolerance: Float = 10): Bool {
     // not in LOS if any of the ends is outside the polygon
-    if(!polygons[0].contains(start) || !polygons[0].contains(end)) return false;
+    if(!pointInsidePolygonTolerant(cl, polygons[0], start) || !pointInsidePolygonTolerant(cl, polygons[0], end)) return false;
     if(start == end) return false;
+
+    if(start.distance(end) < tolerance) return true;
 
     for (polygon in polygons){
         for (i in 0...polygon.points.length) {
-            var v1 = polygon.points[i];
-            var v2 = polygon.points[(i+1) % polygon.points.length];
+            var p1 = polygon.points[i];
+            var p2 = polygon.points[(i+1) % polygon.points.length];
             
-            if(linesIntersect(cl, start, end, v1, v2)) return false;
+            if(linesIntersect(cl, start, end, p1, p2)) return false;
         }
     }
     
@@ -94,4 +96,39 @@ function getDirection(cl:Class<Math>, origin: Point, target: Point): Point{
     }
 
     return dir;
+}
+
+function pointInsidePolygonTolerant(cl: Class<Math>, polygon: Polygon, point: Point, tolerance: Float = 5): Bool{
+    var inside: Bool = false;
+    
+    if(polygon.length < 3) return false;
+
+    var oldPoint: Point = polygon.points[polygon.length - 1];
+    var oldSqDist: Float = oldPoint.distanceSq(point);
+
+    for (newPoint in polygon.points){
+        var newSqDist: Float = newPoint.distanceSq(point);
+
+        if(oldSqDist + newSqDist + 2 * Math.sqrt(oldSqDist * newSqDist) - newPoint.distanceSq(oldPoint) < tolerance) return true;
+
+        var left: Point;
+        var right: Point;
+
+        if(newPoint.x > oldPoint.x){
+            left = oldPoint;
+            right = newPoint;
+        }
+        else{
+            left = newPoint;
+            right = oldPoint;
+        }
+
+        if(left.x < point.x && point.x <= right.x && (point.y - left.y) * (right.x - left.x) < (right.y - left.y) * (point.x - left.x))
+            inside = !inside;
+
+        oldPoint = newPoint;
+        oldSqDist = newSqDist;
+    }
+
+    return inside;
 }
