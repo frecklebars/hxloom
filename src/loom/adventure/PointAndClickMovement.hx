@@ -26,8 +26,16 @@ class AstarNode extends Point {
 }
 
 class PointAndClickMovement extends Component {
+    private var nodesW: Int;
+    private var nodesH: Int;
+    private var resW: Int;
+    private var resH: Int;
+    var nodeSpacingW: Float;
+    var nodeSpacingH: Float;
+
     private var graph: Array<AstarNode> = [];
-    private var graphIds: Array<Int> = [];
+    private var graphIds: Array<Int> = []; // graph coordinates ids to check existing position nodes
+    private var graphIdsMap: Map<Int, Int> = [];
     private var queue: Array<AstarNode> = [];
     
     private var start: AstarNode;
@@ -40,78 +48,127 @@ class PointAndClickMovement extends Component {
     private var visitedNodes: Array<AstarNode>;
 
     public var walking: Bool = false;
-    public var speed: Int = 60;
+    public var speed: Float = 60;
 
     private var walkingDir: Point;
 
-    public function new(name: String = "pointandclickmovement") {
+    public function new(name: String = "pointandclickmovement", nodesW: Int = 40, nodesH: Int = 20, resW: Int = 320, resH: Int = 200) {
         super(name);
+        this.nodesW = nodesW;
+        this.nodesH = nodesH;
+        this.resW = resW;
+        this.resH = resH;
     }
 
-    private function makeGraph(walkArea: Polygon, exclusionAreas: Array<Polygon>){
-        var concavePoints = Math.getConcavePoints(walkArea);
-        for(exclArea in exclusionAreas){
-            concavePoints = concavePoints.concat(Math.getConvexPoints(exclArea));
-        }
-        concavePoints.push(goal);
-        concavePoints.insert(0, start);
+    private function makeGrid(nodesW: Int, nodesH: Int, resW: Int, resH: Int, walkArea: Polygon, exclusionAreas: Array<Polygon>){
+        nodeSpacingW = resW / (nodesW + 1);
+        nodeSpacingH = resH / (nodesH + 1);
 
-        for (i in 0...concavePoints.length-1){
-            for (j in i...concavePoints.length){
-                var point1: Point = concavePoints[i];
-                var point2: Point = concavePoints[j];
+        graph = [];
+        graphIds = [];
 
-                if(Math.pointInLineOfSight([walkArea].concat(exclusionAreas), point1, point2)){
-                    var apoint1: AstarNode;
-                    var apoint2: AstarNode;
-                    
-                    if(graphIds.contains(i)){
-                        apoint1 = findInGraph(i);
-                    }
-                    else{
-                        apoint1 = new AstarNode(i, point1.x, point1.y);
-                        graphIds.push(i);
-                        graph.push(apoint1);
-                    }
+        for (i in 0...nodesH){
+            for (j in 0...nodesW){
+                var pointAlive: Bool = true;
+                var pointId: Int = j+nodesW*i;
+                var point = new AstarNode(pointId, nodeSpacingW * (j+1), nodeSpacingH * (i+1));
 
-                    if(graphIds.contains(j)){
-                        apoint2 = findInGraph(j);
+                if(!walkArea.contains(point)) continue;
+                for(exclArea in exclusionAreas){
+                    if(exclArea.contains(point)){
+                        pointAlive = false;
+                        break;
                     }
-                    else{
-                        apoint2 = new AstarNode(j, point2.x, point2.y);
-                        graphIds.push(j);
-                        graph.push(apoint2);
-                    }
+                }
+                if(pointAlive){
+                    graph.push(point);
+                    graphIds.push(pointId);
+                }
+                else continue;
 
-                    apoint1.neighbors.push({ id: j, distance: apoint1.distanceSq(apoint2) });
-                    // apoint1.distFromStart = apoint1.distanceSq(concavePoints[0]);
-                    apoint1.distToGoal = apoint1.distanceSq(concavePoints[concavePoints.length - 1]);
-                    
-                    apoint2.neighbors.push({ id: i, distance: apoint1.distanceSq(apoint1) });
-                    // apoint2.distFromStart = apoint2.distanceSq(concavePoints[0]);
-                    apoint2.distToGoal = apoint2.distanceSq(concavePoints[concavePoints.length - 1]);
+                // now connect nodes NW, N, NE, W if they exist
+                var neighbor: AstarNode;
+                var neighborId: Int;
+                if(i > 0){
+                    // NW
+                    neighborId = (j-1)+ nodesW * (i-1);
+                    if(j > 0 && graphIds.contains(neighborId)){
+                        neighbor = findInGraph(neighborId);
+                        neighbor.neighbors.push({id: pointId, distance: 14});
+                        point.neighbors.push({id:neighborId, distance: 14});
+                    }
+                    // N
+                    neighborId = j+ nodesW * (i-1);
+                    if(graphIds.contains(neighborId)){
+                        neighbor = findInGraph(neighborId);
+                        neighbor.neighbors.push({id: pointId, distance: 10});
+                        point.neighbors.push({id:neighborId, distance: 10});
+                    }
+                    // NE
+                    neighborId = (j+1)+ nodesW * (i-1);
+                    if(j < nodesW && graphIds.contains(neighborId)){
+                        neighbor = findInGraph(neighborId);
+                        neighbor.neighbors.push({id: pointId, distance: 14});
+                        point.neighbors.push({id:neighborId, distance: 14});
+                    }
+                }
+                // W
+                neighborId = (j-1) + nodesW * i;
+                if(j > 0 && graphIds.contains(neighborId)){
+                    neighbor = findInGraph(neighborId);
+                    neighbor.neighbors.push({id: pointId, distance: 10});
+                    point.neighbors.push({id:neighborId, distance: 10});
                 }
             }
         }
 
-        haxe.ds.ArraySort.sort(graph, function(a, b): Int {return a.id - b.id;});
-        haxe.ds.ArraySort.sort(graphIds, function(a, b): Int {return a - b;});
-        start = graph[0];
-        start.distFromStart = 0;
-        goal = graph[graph.length-1];
         remapGraph();
     }
 
+    private function findNodesAroundPoint(point: Point): Array<AstarNode>{
+        var closestW: Int = Math.floor(point.x / nodeSpacingW);
+        var closestH: Int = Math.floor(point.y / nodeSpacingH);
+        
+        var neighbors: Array<AstarNode> = [];
+        
+        var possibleIds: Array<Int> = [
+            closestW   + nodesW *  closestH - 1,
+            closestW+1 + nodesW *  closestH - 1,
+            closestW   + nodesW * (closestH-1) - 1,
+            closestW+1 + nodesW * (closestH-1) - 1,
+        ];
+
+        for(pid in possibleIds){
+            if(graphIds.contains(pid)){
+                neighbors.push(graph[graphIdsMap[pid]]);
+            }
+        }
+
+        #if debug
+        var debugDraw: Bool = false;
+        if(debugDraw){
+            var drawer: h2d.Graphics = parent.room.drawer;
+            drawer.lineStyle(1, 0x00FF00);
+            for(n in neighbors){
+                drawer.moveTo(point.x, point.y);
+                drawer.lineTo(n.x, n.y);
+            }
+        }
+        #end
+
+        return neighbors;
+    }
+
     private function remapGraph(){
-        var idsMap: Map<Int, Int> = [];
+        graphIdsMap = [];
 
         for (i in 0...graphIds.length){
-            idsMap.set(graphIds[i], i);
+            graphIdsMap.set(graphIds[i], i);
         }
 
         for (node in graph){
-            node.id = idsMap[node.id];
-            node.neighbors = [for(n in node.neighbors) {id: idsMap[n.id], distance: n.distance}];
+            node.id = graphIdsMap[node.id];
+            node.neighbors = [for(n in node.neighbors) {id: graphIdsMap[n.id], distance: n.distance}];
         }
     }
 
@@ -124,21 +181,34 @@ class PointAndClickMovement extends Component {
 
     private function calculatePath(goalX: Float, goalY: Float){
         visitedNodes = [];
-        start = new AstarNode(-1, parent.x, parent.y);
+        start = new AstarNode(graph.length, parent.x, parent.y);
+        var startNeighbors: Array<AstarNode> = findNodesAroundPoint(start);
+        for (startNeighbor in startNeighbors){
+            var dist: Float = startNeighbor.distanceSq(start);
+            start.neighbors.push({id: startNeighbor.id, distance: dist});  
+            startNeighbor.neighbors.push({id: start.id, distance: dist});
+        }
         start.distFromStart = 0;
-        goal = new AstarNode(-2, goalX, goalY);
-        graph = [];
-        graphIds = [];
+
+        goal = new AstarNode(graph.length+1, goalX, goalY);
+        var goalNeighbors: Array<AstarNode> = findNodesAroundPoint(goal);
+        for (goalNeighbor in goalNeighbors){
+            var dist: Float = goalNeighbor.distanceSq(goal);
+            goal.neighbors.push({id: goalNeighbor.id, distance: dist});  
+            goalNeighbor.neighbors.push({id: goal.id, distance: dist});
+        }
+
+        graph.push(start);
+        graph.push(goal);
         
-        makeGraph(parent.room.walkArea, parent.room.exclusionAreas);
         
-        openNodes = [graph[0]];
+        openNodes = [start];
 
         while(openNodes.length > 0){
             haxe.ds.ArraySort.sort(openNodes, function(a, b): Int {return Std.int((a.distFromStart + a.distToGoal) - (b.distFromStart + b.distToGoal));});
             currentNode = openNodes.shift();
 
-            // if(currentNode == goal) break;
+            if(currentNode == goal) break;
 
             visitedNodes.push(currentNode);
 
@@ -157,21 +227,33 @@ class PointAndClickMovement extends Component {
             }
 
         }
+
+        for (startNeighbor in startNeighbors){
+            startNeighbor.neighbors.pop();
+        }
+        for (goalNeighbor in goalNeighbors){
+            goalNeighbor.neighbors.pop();
+        }
+        graph.pop();
+        graph.pop();
     }
 
     function getComputedPath(): Array<AstarNode>{
         var path: Array<AstarNode> = [goal];
 
         while(path[0].parent != -1){
+            if(path[0].parent == graph.length) break; // start node found
+
             path.insert(0, graph[path[0].parent]);
         }
-        path.shift();
 
         return path;
     }
 
     override function init(){
         super.init();
+
+        makeGrid(nodesW, nodesH, resW, resH, parent.room.walkArea, parent.room.exclusionAreas);
     }
 
     override function update(dt: Float){
@@ -183,7 +265,8 @@ class PointAndClickMovement extends Component {
             path = getComputedPath();
             walking = true;
             walkingDir = Math.getDirection(new Point(parent.x, parent.y), path[0]);
-            drawGraph(0x111);
+
+            // drawGraph(0x111);
         }
 
         if(walking){
@@ -210,7 +293,7 @@ class PointAndClickMovement extends Component {
     #if debug
     public function drawGraph(mode: Int = 0x111){
         parent.room.drawer.clear();
-        // loom.utils.RoomUtils.drawWalkArea(parent.room, parent.room.walkArea, parent.room.exclusionAreas, 0x010100);
+        loom.utils.RoomUtils.drawWalkArea(parent.room, parent.room.walkArea, parent.room.exclusionAreas, 0x010100);
         if(mode & 0x010 == 0x010) drawGraphEdges();
         if(mode & 0x100 == 0x100) drawGraphNodes();
         if(mode & 0x001 == 0x001 && graph.length > 1) drawComputedPath();
@@ -220,15 +303,11 @@ class PointAndClickMovement extends Component {
         var drawer: h2d.Graphics = parent.room.drawer;
         if(clear) drawer.clear();
         
-        drawer.lineStyle(1, 0x00FF00);
-        drawer.drawRect(graph[0].x-1, graph[0].y-1, 3, 3);
-        drawer.lineStyle(1, 0xFF00FF);
-        drawer.drawRect(graph[graph.length-1].x-1, graph[graph.length-1].y-1, 3, 3);
-        
         drawer.lineStyle(1, color);
         for (i in 1...graph.length-1){
             var node: AstarNode = graph[i];
-            drawer.drawRect(node.x-1, node.y-1, 3, 3);
+            // drawer.drawRect(node.x-1, node.y-1, 3, 3);
+            drawer.drawRect(node.x, node.y, 1, 1);
         }
     }
 
@@ -248,12 +327,18 @@ class PointAndClickMovement extends Component {
     public function drawComputedPath(color: Color = 0xFF00FF, clear: Bool = false){
         var drawer: h2d.Graphics = parent.room.drawer;
         if(clear) drawer.clear();
+        
+        var node: AstarNode = goal;
+        drawer.lineStyle(1, 0xFF0000);
+        drawer.drawRect(node.x-1, node.y-1, 3, 3);
         drawer.lineStyle(1, color);
 
-        var node: AstarNode = goal;
         while(node.parent != -1){
             drawer.moveTo(node.x, node.y);
-            node = graph[node.parent];
+            
+            if(node.parent == graph.length) node = start;
+            else node = graph[node.parent];
+            
             drawer.lineTo(node.x, node.y);
 
             drawer.lineStyle(1, 0xFF0000);
