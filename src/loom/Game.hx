@@ -1,5 +1,8 @@
 package loom;
 
+import haxe.ui.Toolkit;
+import haxe.ui.core.Screen;
+
 class Game extends hxd.App{
 
     public var resW: Int;
@@ -20,6 +23,10 @@ class Game extends hxd.App{
         activeRoom.filter = new h2d.filter.Nothing();
         
         if(initialise) activeRoom.init();
+
+        Screen.instance.root = room;
+        // var ui: UiTest = new UiTest();
+        // Screen.instance.addComponent(ui);
     }
     
     override function init(){
@@ -27,6 +34,8 @@ class Game extends hxd.App{
         resH = 200;
         
         scaleMode = LetterBox(resW, resH, true, Center, Center); // pixel-perfect scaling
+
+        Toolkit.init();
     }
 
     override function update(dt:Float){

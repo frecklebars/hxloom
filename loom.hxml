@@ -3,6 +3,8 @@
 --library heaps
 --library hlsdl
 --library heaps-aseprite
+--library haxeui-core
+--library haxeui-heaps
 
 --no-output
 -hl loom.hl
