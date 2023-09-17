@@ -59,7 +59,7 @@ function linesIntersect(cl:Class<Math>, p1: Point, p2: Point, q1: Point, q2: Poi
     return (r > 0 && r < 1) && (s > 0 && s < 1);
 }
 
-function pointInLineOfSight(cl:Class<Math>, polygons: Array<Polygon>, start: Point, end: Point, tolerance: Float = 10): Bool {
+function pointInLineOfSight(cl:Class<Math>, polygons: Array<Polygon>, start: Point, end: Point, tolerance: Float = 5): Bool {
     // not in LOS if any of the ends is outside the polygon
     if(!pointInsidePolygonTolerant(cl, polygons[0], start) || !pointInsidePolygonTolerant(cl, polygons[0], end)) return false;
     if(start == end) return false;

@@ -28,8 +28,8 @@ class AstarNode extends Point {
 class PointAndClickMovement extends Component {
     private var nodesW: Int;
     private var nodesH: Int;
-    private var resW: Int;
-    private var resH: Int;
+    private var roomW: Int;
+    private var roomH: Int;
     var nodeSpacingW: Float;
     var nodeSpacingH: Float;
 
@@ -52,17 +52,26 @@ class PointAndClickMovement extends Component {
 
     private var walkingDir: Point;
 
-    public function new(name: String = "pointandclickmovement", nodesW: Int = 40, nodesH: Int = 20, resW: Int = 320, resH: Int = 200) {
+    public function new(name: String = "pointandclickmovement", nodesW: Int = 40, nodesH: Int = 20, roomW: Int = 320, roomH: Int = 200) {
         super(name);
         this.nodesW = nodesW;
         this.nodesH = nodesH;
-        this.resW = resW;
-        this.resH = resH;
+        this.roomW = roomW;
+        this.roomH = roomH;
     }
 
-    private function makeGrid(nodesW: Int, nodesH: Int, resW: Int, resH: Int, walkArea: Polygon, exclusionAreas: Array<Polygon>){
-        nodeSpacingW = resW / (nodesW + 1);
-        nodeSpacingH = resH / (nodesH + 1);
+    public function changeRoomSize(nodesW: Int, nodesH: Int, roomW: Int, roomH: Int){
+        this.nodesW = nodesW;
+        this.nodesH = nodesH;
+        this.roomW = roomW;
+        this.roomH = roomH;
+
+        makeGrid(nodesW, nodesH, roomW, roomH, parent.room.walkArea, parent.room.exclusionAreas);
+    }
+
+    private function makeGrid(nodesW: Int, nodesH: Int, roomW: Int, roomH: Int, walkArea: Polygon, exclusionAreas: Array<Polygon>){
+        nodeSpacingW = roomW / (nodesW + 1);
+        nodeSpacingH = roomH / (nodesH + 1);
 
         graph = [];
         graphIds = [];
@@ -182,6 +191,12 @@ class PointAndClickMovement extends Component {
     private function calculatePath(goalX: Float, goalY: Float){
         visitedNodes = [];
         start = new AstarNode(graph.length, parent.x, parent.y);
+        goal = new AstarNode(graph.length+1, goalX, goalY);
+
+        if(Math.pointInLineOfSight([parent.room.walkArea].concat(parent.room.exclusionAreas), start, goal)){
+            return;
+        }
+
         var startNeighbors: Array<AstarNode> = findNodesAroundPoint(start);
         for (startNeighbor in startNeighbors){
             var dist: Float = startNeighbor.distanceSq(start);
@@ -190,7 +205,6 @@ class PointAndClickMovement extends Component {
         }
         start.distFromStart = 0;
 
-        goal = new AstarNode(graph.length+1, goalX, goalY);
         var goalNeighbors: Array<AstarNode> = findNodesAroundPoint(goal);
         for (goalNeighbor in goalNeighbors){
             var dist: Float = goalNeighbor.distanceSq(goal);
@@ -253,7 +267,7 @@ class PointAndClickMovement extends Component {
     override function init(){
         super.init();
 
-        makeGrid(nodesW, nodesH, resW, resH, parent.room.walkArea, parent.room.exclusionAreas);
+        makeGrid(nodesW, nodesH, roomW, roomH, parent.room.walkArea, parent.room.exclusionAreas);
     }
 
     override function update(dt: Float){
