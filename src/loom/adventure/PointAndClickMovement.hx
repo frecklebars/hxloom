@@ -264,6 +264,25 @@ class PointAndClickMovement extends Component {
         return path;
     }
 
+    function getGoal(goalX, goalY): Point{
+        var goal: Point = new Point(goalX, goalY);
+        if(parent.room.walkArea.contains(goal)){
+            for (area in parent.room.exclusionAreas){
+                if(area.contains(goal)){
+                    goal = area.projectPoint(goal);
+                    goal.x = Std.int(goal.x);
+                    goal.y = Std.int(goal.y);
+                    return goal;
+                }
+            }
+            return goal;
+        }
+        goal = parent.room.walkArea.projectPoint(goal);
+        goal.x = Std.int(goal.x);
+        goal.y = Std.int(goal.y);
+        return goal;
+    }
+
     override function init(){
         super.init();
 
@@ -274,13 +293,15 @@ class PointAndClickMovement extends Component {
         super.update(dt);
 
         if(Key.isPressed(Key.MOUSE_LEFT)){
-            
-            calculatePath(parent.room.mouseX, parent.room.mouseY);
+            // if(goalValid(Std.int(parent.room.mouseX), Std.int(parent.room.mouseY))){
+            var goalPoint: Point = getGoal(parent.room.mouseX, parent.room.mouseY);
+    
+            calculatePath(goalPoint.x, goalPoint.y);
             path = getComputedPath();
             walking = true;
             walkingDir = Math.getDirection(new Point(parent.x, parent.y), path[0]);
-
-            // drawGraph(0x111);
+            // }   
+            drawGraph(0x111);
         }
 
         if(walking){
