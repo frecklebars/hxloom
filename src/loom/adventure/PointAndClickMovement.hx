@@ -293,14 +293,12 @@ class PointAndClickMovement extends Component {
         super.update(dt);
 
         if(Key.isPressed(Key.MOUSE_LEFT)){
-            // if(goalValid(Std.int(parent.room.mouseX), Std.int(parent.room.mouseY))){
             var goalPoint: Point = getGoal(parent.room.mouseX, parent.room.mouseY);
     
             calculatePath(goalPoint.x, goalPoint.y);
             path = getComputedPath();
             walking = true;
             walkingDir = Math.getDirection(new Point(parent.x, parent.y), path[0]);
-            // }   
             drawGraph(0x111);
         }
 
