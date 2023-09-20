@@ -85,8 +85,9 @@ function pointInLineOfSight(cl:Class<Math>, polygons: Array<Polygon>, start: Poi
     return inside;
 }
 
-function getDirection(cl:Class<Math>, origin: Point, target: Point): Point{
+function getDirection(cl:Class<Math>, origin: Point, target: Point, shiftX: Float = 1, shiftY: Float = 1): Point{
     var dir: Point = new Point(target.x - origin.x, target.y - origin.y);
+    dir.x = dir.x * shiftX;
 
     var mag: Float = Math.sqrt(dir.x * dir.x + dir.y * dir.y);
 

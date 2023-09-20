@@ -49,6 +49,8 @@ class PointAndClickMovement extends Component {
 
     public var walking: Bool = false;
     public var speed: Float = 60;
+    public var speedModX: Float = 1;
+    public var speedModY: Float = 0.7;
 
     private var walkingDir: Point;
 
@@ -298,8 +300,8 @@ class PointAndClickMovement extends Component {
             calculatePath(goalPoint.x, goalPoint.y);
             path = getComputedPath();
             walking = true;
-            walkingDir = Math.getDirection(new Point(parent.x, parent.y), path[0]);
-            drawGraph(0x111);
+            walkingDir = Math.getDirection(new Point(parent.x, parent.y), path[0], speedModY, speedModX);
+            // drawGraph(0x111);
         }
 
         if(walking){
@@ -308,17 +310,17 @@ class PointAndClickMovement extends Component {
             if(distance < 1){
                 path.shift();
                 if(path.length > 0){
-                    walkingDir = Math.getDirection(parentPoint, path[0]);
+                    walkingDir = Math.getDirection(parentPoint, path[0], speedModY, speedModX);
                 }
                 else{
                     walking = false;
-                    parent.x = goal.x;
-                    parent.y = goal.y;
+                    parent.x = Std.int(goal.x);
+                    parent.y = Std.int(goal.y);
                 }
             }
             else{
-                parent.x += (walkingDir.x * speed * dt);
-                parent.y += (walkingDir.y * speed * dt);
+                parent.x += (walkingDir.x * speed * speedModX * dt);
+                parent.y += (walkingDir.y * speed * speedModY * dt);
             }
         }
     }
