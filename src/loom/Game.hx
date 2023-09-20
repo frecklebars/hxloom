@@ -8,6 +8,8 @@ class Game extends hxd.App{
     public var resW: Int;
     public var resH: Int;
     private var scaleMode: h2d.Scene.ScaleMode;
+
+    public var globals: Globals;
     
     public var activeRoom(default, null): Room;
 
@@ -31,7 +33,7 @@ class Game extends hxd.App{
     
     override function init(){
         resW = 320; // TODO read from config
-        resH = 200;
+        resH = 200; 
         
         scaleMode = LetterBox(resW, resH, true, Center, Center); // pixel-perfect scaling
 
