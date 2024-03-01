@@ -4,11 +4,12 @@
 	"license": "MIT",
 	"tags": [],
 	"description": "loom",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"classPath": "src/",
 	"releasenote": "",
 	"contributors": ["frecklebars"],
 	"dependencies": {
-        "heaps": ""
+        "heaps": "",
+		"heaps-aseprite": ""
     }
 }
