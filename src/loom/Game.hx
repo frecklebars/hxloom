@@ -31,6 +31,6 @@ class Game extends hxd.App {
     }
 
     override function update(dt: Float){
-        currentRoom.update(dt);
+        if(currentRoom != null) currentRoom.update(dt);
     }
 }

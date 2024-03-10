@@ -16,6 +16,7 @@ class Room extends h2d.Scene {
     public function addObject(object: Object, ?initialise: Bool = true, ?layer: Int = 4){
         object.changeRoom(this);
         this.objects.set(object.name, object);
+        add(object, layer);
 
         if(initialise) object.init();
     }
@@ -26,6 +27,8 @@ class Room extends h2d.Scene {
     }
 
     public function init(){}
-    public function update(dt: Float){}
+    public function update(dt: Float){
+        ysort(4);
+    }
 
 }
