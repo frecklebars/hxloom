@@ -6,6 +6,7 @@ class Room extends h2d.Scene {
 
     private var background: Background;
     private var objects: Map<String, loom.Object> = [];
+    private var objectsUpdateable: Array<loom.Object> = [];
     
     public function new(backgroundPath: String){
         super();
@@ -17,7 +18,9 @@ class Room extends h2d.Scene {
         object.changeRoom(this);
         this.objects.set(object.name, object);
         add(object, layer);
-
+        
+        if(object.updateable) objectsUpdateable.push(object);
+        
         if(initialise) object.init();
     }
     public function createAndAddObject<T:Object>(objectClass: Class<T>, args: Array<Dynamic>, ?initialise: Bool = true, ?layer: Int = 4): T{
@@ -28,6 +31,10 @@ class Room extends h2d.Scene {
 
     public function init(){}
     public function update(dt: Float){
+        for(obj in objectsUpdateable){
+            if(obj.enabled) obj.update(dt);
+        }
+
         ysort(4);
     }
 
