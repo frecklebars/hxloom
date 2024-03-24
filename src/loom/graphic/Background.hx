@@ -1,5 +1,12 @@
 package loom.graphic;
 
+typedef BackgroundConfig = {
+    var ?path: String;
+    var ?color: Color;
+    var ?width: Int;
+    var ?height: Int;
+}
+
 class Background extends h2d.Bitmap {
     
     public function new(tile: h2d.Tile, room: Room){

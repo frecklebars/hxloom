@@ -2,16 +2,35 @@ package loom;
 
 import loom.graphic.Background;
 
-class Room extends h2d.Scene {
+typedef RoomConfig = {
+    var name: String;
 
+    var ?background: loom.graphic.Background.BackgroundConfig;
+}
+
+class Room extends h2d.Scene {
     private var background: Background;
     private var objects: Map<String, loom.Object> = [];
     private var objectsUpdateable: Array<loom.Object> = [];
     
-    public function new(backgroundPath: String){
+    public function new(config: RoomConfig){
         super();
+        name = config.name;
 
-        background = Background.fromPng(this, backgroundPath);
+        if(config.background != null){
+            if(config.background.path != null){
+                background = Background.fromPng(this, config.background.path);
+            }
+            else if(config.background.color != null){
+                background = Background.fromColor(
+                    this, 
+                    config.background.color,
+                    config.background.width,
+                    config.background.height
+                );
+            }
+        }
+
     }
 
     public function addObject(object: Object, ?initialise: Bool = true, ?layer: Int = 4){
