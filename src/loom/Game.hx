@@ -2,13 +2,14 @@ package loom;
 
 class Game extends hxd.App {
 
-    public var resolutionW: Int;
-    public var resolutionH: Int;
+    public var resolutionW: Int = 320;
+    public var resolutionH: Int = 200;
 
     private var scaleMode: h2d.Scene.ScaleMode;
 
     public var _rooms: Map<String, Room> = [];
     public var currentRoom(default, null): Room;
+
     public var player(default, null): Actor;
 
     public function new(){
@@ -16,9 +17,6 @@ class Game extends hxd.App {
     }
 
     override function init(){
-        resolutionW = 320; // TODO pass as parameters
-        resolutionH = 200;
-
         // pixel-perfect scaling
         scaleMode = LetterBox(resolutionW, resolutionH, true, Center, Center);
     }
@@ -27,30 +25,50 @@ class Game extends hxd.App {
         var room = Type.createInstance(roomClass, []);
 
         if(_rooms.exists(room.name)){
-            trace('Room with name ${room.name} is already registered');
+            trace('Room with name ${room.name} is already registered.');
             return null;
         }
         room.game = this;
         _rooms.set(room.name, room);
-        
+                
+        room.scaleMode = scaleMode;
+        room.filter = new h2d.filter.Nothing();
+
         if(initialise) room.init();
 
         return room;
     }
     
+    // TODO untested (when actually moving between rooms properly)
     public function moveToRoom(roomName: String){
         var room: Room;
         if(_rooms.exists(roomName)){
             room = _rooms[roomName];
         } else return;
 
-        currentRoom = room;
+        if(currentRoom != null && player != null){
+            currentRoom.removeActor(player.name);
+        }
         
-        room.scaleMode = scaleMode;
-        room.filter = new h2d.filter.Nothing();
-        room.init();
+        currentRoom = room;
 
+        if(player != null){
+            currentRoom.addActor(player, false);
+        } 
+    
         setScene(room);
+    }
+
+    public function changePlayer(newPlayer: Actor){
+        player = newPlayer;
+        // TODO later, change to player room, redraw inventory/ui, remove from updateables.
+    }
+
+    public function createPlayer<T:Actor>(playerClass: Class<T>, ?initialise: Bool = true): T{
+        var player = Type.createInstance(playerClass, []);
+        changePlayer(player);
+
+        return player;
     }
 
     override function update(dt: Float){
