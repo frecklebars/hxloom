@@ -6,7 +6,7 @@ typedef ObjectConfig = {
     var name: String;
     var ?enabled: Bool;
     var ?updateable: Bool;
-    var ?position: {x: Int, y: Int};
+    var ?position: loom.Point;
 
     var ?sprite: loom.graphic.Sprite.SpriteConfig;
 }

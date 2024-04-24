@@ -9,6 +9,7 @@ class Game extends hxd.App {
 
     public var _rooms: Map<String, Room> = [];
     public var currentRoom(default, null): Room;
+    // public var prevRoom(default, null): Room; // TODO implement
 
     public var player(default, null): Actor;
 
@@ -57,6 +58,8 @@ class Game extends hxd.App {
         } 
     
         setScene(room);
+
+        room.onEntry();
     }
 
     public function changePlayer(newPlayer: Actor){

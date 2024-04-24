@@ -4,6 +4,7 @@ import loom.graphic.Background;
 
 typedef RoomConfig = {
     var name: String;
+    var entry: Map<String, loom.Point>; // player entry points: prevRoom name ("_" if none) and point. TODO add facing direction too
 
     var ?background: loom.graphic.Background.BackgroundConfig;
 }
@@ -12,14 +13,17 @@ class Room extends h2d.Scene {
     @:allow(loom.Game)
     public var game(default, null): loom.Game;
 
-    private var background: Background;
     private var _objects: Map<String, loom.Object> = [];
     private var _actors: Map<String, loom.Actor> = [];
     private var updateables: Array<loom.Object> = [];
     
+    private var background: Background;
+    private var entry: Map<String, loom.Point>;
+    
     public function new(config: RoomConfig){
         super();
         name = config.name;
+        entry = config.entry;
 
         if(config.background != null){
             if(config.background.path != null){
@@ -93,6 +97,14 @@ class Room extends h2d.Scene {
         
         return removedActor;
     }
+
+    public function onEntry(){
+        // TODO check game.prevRoom and pos player based on that
+        game.player.x = entry["_"].x;
+        game.player.y = entry["_"].y;
+    }
+
+    public function onExit(){}
 
     public function init(){}
     public function update(dt: Float){
