@@ -55,7 +55,7 @@ class Game extends hxd.App {
 
         if(player != null){
             currentRoom.addActor(player, false);
-        } 
+        }
     
         setScene(room);
 
