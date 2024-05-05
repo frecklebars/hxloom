@@ -74,7 +74,7 @@ class Sprite extends aseprite.AseAnim{
         play(animations[tag].frames);
     }
 
-    // public function flipHorizontal(){
-    //     scaleX = -scaleX;
-    // }
+    public function flipHorizontal(){
+        scaleX = -scaleX;
+    }
 }

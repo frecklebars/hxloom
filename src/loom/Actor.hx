@@ -8,9 +8,16 @@ typedef ActorConfig = {
     var ?isPlayer: Bool;
 }
 
+// enum ActorFacing {
+//     FacingUp;
+//     FacingDown;
+//     FacingLeft;
+//     FacingRight;
+// }
+
 class Actor extends loom.Object{
 
-    var isPlayer: Bool = false;
+    public var isPlayer: Bool = false;
 
     public function new(config: ActorConfig){
         if(config.isPlayer) setAsPlayer();
