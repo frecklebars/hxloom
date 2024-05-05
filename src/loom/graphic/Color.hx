@@ -4,6 +4,18 @@ using loom.math.MathExtensions;
 
 // 0xAARRGGBB
 abstract Color(Int) from Int to Int {
+
+    public static inline var WHITE    = 0xFFFFFF;
+    public static inline var GRAY     = 0x888888;
+    public static inline var BLACK    = 0x000000;
+    public static inline var RED      = 0xFF0000;
+    public static inline var GREEN    = 0x00FF00;
+    public static inline var BLUE     = 0x0000FF;
+    public static inline var YELLOW   = 0xFFFF00;
+    public static inline var MAGENTA  = 0xFF00FF;
+    public static inline var CYAN     = 0x00FFFF;
+
+
     public var alpha(get, set): Int;
     public var red(get, set): Int;
     public var blue(get, set): Int;

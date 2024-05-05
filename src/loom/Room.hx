@@ -1,10 +1,15 @@
 package loom;
 
+import hxd.Key;
+
+import loom.editor.RoomEditor;
 import loom.graphic.Background;
 
 typedef RoomConfig = {
     var name: String;
     var entry: Map<String, loom.Point>; // player entry points: prevRoom name ("_" if none) and point. TODO add facing direction too
+
+    var ?walkArea: Array<loom.Point>;
 
     var ?background: loom.graphic.Background.BackgroundConfig;
 }
@@ -19,6 +24,12 @@ class Room extends h2d.Scene {
     
     private var background: Background;
     private var entry: Map<String, loom.Point>;
+
+    public var walkArea: h2d.col.Polygon = [];
+
+    #if debug
+    private var editor: RoomEditor;
+    #end
     
     public function new(config: RoomConfig){
         super();
@@ -39,6 +50,16 @@ class Room extends h2d.Scene {
             }
         }
 
+        if(config.walkArea != null){
+            for (p in config.walkArea){
+                this.walkArea.push(new h2d.col.Point(p.x, p.y));
+            }
+        }
+
+        #if debug
+        editor = new RoomEditor(this);
+        add(editor.drawer, 40);
+        #end
     }
     
     // removed args bcos you should declare everything in the config in the init of the inheriting class
@@ -108,6 +129,14 @@ class Room extends h2d.Scene {
 
     public function init(){}
     public function update(dt: Float){
+        #if debug
+        if(Key.isPressed(Key.QWERTY_TILDE)) editor.toggleEditor();
+        if(editor.EDIT_MODE != Inactive){
+            editor.update(dt);
+            return;
+        }
+        #end
+
         if(game.player != null){ // curious to benchmark how much this if statement takes since literally all of the time its going to eval to true
             if(game.player.enabled) game.player.update(dt);
         }
@@ -118,5 +147,4 @@ class Room extends h2d.Scene {
 
         ysort(4);
     }
-
 }
