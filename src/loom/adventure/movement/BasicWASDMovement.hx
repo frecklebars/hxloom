@@ -10,6 +10,7 @@ class BasicWASDMovement implements Component{
     public var speed: Int = 80;
 
     public var walking: Bool = false;
+    public var stoppedWalking: Bool = false;
 
     public function new(parent: loom.Object, ?speed: Int){
         this.parent = parent;
@@ -33,8 +34,12 @@ class BasicWASDMovement implements Component{
                 parent.x = parent.x + dt * speed;
             }
         }
-        else{
+        else if(Key.isReleased(Key.W) || Key.isReleased(Key.A) || Key.isReleased(Key.S) || Key.isReleased(Key.D)){
             walking = false;
+            stoppedWalking = true;
+        }
+        else{
+            stoppedWalking = false;
         }
     }
 }

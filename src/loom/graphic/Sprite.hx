@@ -23,7 +23,7 @@ class Sprite extends aseprite.AseAnim{
     private var sprite: Aseprite;
     private var animations: Map<String, Animation> = [];
 
-    private var currentAnimation: String;
+    public var currentAnimation: String;
 
     private var bitmap: h2d.Bitmap;
 
