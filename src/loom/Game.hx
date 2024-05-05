@@ -71,8 +71,6 @@ class Game extends hxd.App {
         var player = Type.createInstance(playerClass, []);
         changePlayer(player);
 
-        if(initialise) player.init();
-
         return player;
     }
 
