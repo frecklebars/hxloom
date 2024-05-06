@@ -8,8 +8,9 @@ import loom.graphic.Background;
 typedef RoomConfig = {
     var name: String;
     var entry: Map<String, loom.Point>; // player entry points: prevRoom name ("_" if none) and point. TODO add facing direction too
-
+    
     var ?walkArea: Array<loom.Point>;
+    var ?exclusionAreas: Array<Array<loom.Point>>;
 
     var ?background: loom.graphic.Background.BackgroundConfig;
 }
@@ -26,6 +27,7 @@ class Room extends h2d.Scene {
     private var entry: Map<String, loom.Point>;
 
     public var walkArea: h2d.col.Polygon = [];
+    public var exclusionAreas: Array<h2d.col.Polygon> = [];
 
     #if debug
     private var editor: RoomEditor;
@@ -53,6 +55,16 @@ class Room extends h2d.Scene {
         if(config.walkArea != null){
             for (p in config.walkArea){
                 this.walkArea.push(new h2d.col.Point(p.x, p.y));
+            }
+        }
+
+        if(config.exclusionAreas != null){
+            for(ea in config.exclusionAreas){
+                var exclArea: Array<h2d.col.Point> = [];
+                for(p in ea){
+                    exclArea.push(new h2d.col.Point(p.x, p.y));
+                }
+                this.exclusionAreas.push(exclArea);
             }
         }
 

@@ -52,10 +52,20 @@ class RoomEditor{
                 editMenuString += "======== EDITOR MODE ========\n";
                 editMenuString += "==== 1 : Edit Walk Area =====\n";
             }
-
+            
             case WalkArea: {
-                editMenuString += "========  EDIT WALK AREA ========\n";
-                // editMenuString += "==== \n"
+                editMenuString += "===========  EDIT WALK AREA ===========\n";
+                editMenuString += "==== SPACE       : Export =============\n";
+                editMenuString += "==== SCROLL      : Change Nodes =======\n";
+                editMenuString += "==== R-CLICK     : Add Node ===========\n";
+                editMenuString += "==== L-CLICK     : Move Node ==========\n";
+                editMenuString += "==== BACKSPACE   : Remove Node ========\n";
+                editMenuString += "==== TAB         : Change Walk ========\n";
+                editMenuString += "====                 or Excl ==========\n";
+                editMenuString += "==== SHIFT+ ===========================\n";
+                editMenuString += "====   R-CLICK   : Add Excl Area ======\n";
+                editMenuString += "====   SCROLL    : Change Excl Area ===\n";
+                editMenuString += "====   BACKSPACE : Remove Excl Area ===\n";
             }
 
             default: return;
@@ -100,6 +110,8 @@ class RoomEditor{
     }
 
     private var activeNode: Int = 0;
+    private var modifyExclusions: Bool = false;
+    private var activeExclusion: Int = 0;
     
     private function update_WalkAreaMode(dt: Float){
         var mouseX: Int = Std.int(room.mouseX);
@@ -107,75 +119,157 @@ class RoomEditor{
         
         drawer.clear();
         
-        drawWalkArea();
+        drawArea();
         
         drawer.lineStyle(1, Color.WHITE);
         drawer.drawRect(mouseX-1, mouseY-1, 3, 3);
-        
-        if(Key.isPressed(Key.SPACE)){ // export
-            if(!room.walkArea.isClockwise()){
-                room.walkArea.reverse();
+
+        if(Key.isPressed(Key.TAB)){
+            modifyExclusions = !modifyExclusions;
+            activeNode = 0;
+            activeExclusion = 0;
+        }
+
+        // modify exclusion areas
+        if(modifyExclusions){ 
+            if(Key.isPressed(Key.SPACE)){ // export
+                exportExclArea(room.exclusionAreas);
             }
-            exportWalkArea(room.walkArea);
+            else if(Key.isDown(Key.SHIFT)){
+                if(Key.isPressed(Key.MOUSE_RIGHT)){
+                    var newExclArea: h2d.col.Polygon = [];
+                    newExclArea.push(new h2d.col.Point(mouseX, mouseY));
+                    room.exclusionAreas.push(newExclArea);
+                    activeExclusion = room.exclusionAreas.length - 1;
+                    activeNode = 0;
+                }
+                else if(room.exclusionAreas.length > 0){
+                    if(Key.isPressed(Key.MOUSE_WHEEL_DOWN)){
+                        activeNode = 0;
+                        activeExclusion -= 1;
+                        activeExclusion = (activeExclusion + room.exclusionAreas.length) % room.exclusionAreas.length;
+                    }
+                    else if(Key.isPressed(Key.MOUSE_WHEEL_UP)){
+                        activeNode = 0;
+                        activeExclusion += 1;
+                        activeExclusion = activeExclusion % room.exclusionAreas.length;
+                    }
+                    else if(Key.isPressed(Key.BACKSPACE)){
+                        room.exclusionAreas.remove(room.exclusionAreas[activeExclusion]);
+                        if(activeExclusion == room.exclusionAreas.length) activeExclusion -= 1;
+                    }
+                }
+            }
+            else if(room.exclusionAreas.length > 0){
+                areaOperation(room.exclusionAreas[activeExclusion], mouseX, mouseY);
+            }
+            
         }
-        else if(Key.isPressed(Key.MOUSE_RIGHT)){
-            placeNode(mouseX, mouseY, activeNode);
+        // modify walk area itself
+        else{ 
+            if(Key.isPressed(Key.SPACE)){ // export
+                if(!room.walkArea.isClockwise()){
+                    room.walkArea.reverse();
+                }
+                exportWalkArea(room.walkArea);
+            }
+            else{
+                areaOperation(room.walkArea, mouseX, mouseY);
+            }
         }
-        else if(room.walkArea.length > 0){
+    }
+
+    private function areaOperation(area: h2d.col.Polygon, mouseX: Int, mouseY: Int){
+        if(Key.isPressed(Key.MOUSE_RIGHT)){
+            placeNode(area, mouseX, mouseY, activeNode);
+        }
+        else if(area.length > 0){
             if(Key.isPressed(Key.MOUSE_LEFT)){
-                room.walkArea[activeNode].x = mouseX;
-                room.walkArea[activeNode].y = mouseY;
+                area[activeNode].x = mouseX;
+                area[activeNode].y = mouseY;
             }
             else if(Key.isPressed(Key.BACKSPACE)){
-                room.walkArea.remove(room.walkArea[activeNode]);
-                if(activeNode == room.walkArea.length) activeNode -= 1;
+                area.remove(area[activeNode]);
+                if(activeNode == area.length) activeNode -= 1;
             }
             else if(Key.isPressed(Key.MOUSE_WHEEL_DOWN)){
                 activeNode -= 1;
-                activeNode = (activeNode + room.walkArea.length) % room.walkArea.length;
+                activeNode = (activeNode + area.length) % area.length;
             }
             else if(Key.isPressed(Key.MOUSE_WHEEL_UP)){
                 activeNode += 1;
-                activeNode = activeNode % room.walkArea.length;
+                activeNode = activeNode % area.length;
             }
         }
     }
 
-    private function drawWalkArea(){
-        // draw Lines
-        drawer.lineStyle(1, Color.RED);
-        if(room.walkArea.length > 1){
-            drawer.moveTo(room.walkArea[0].x, room.walkArea[0].y);
+    private function drawArea(?drawWalkArea: Bool = true, ?drawExclusionArea: Bool = true){
+        if(drawWalkArea){
+            // draw Lines
+            drawer.lineStyle(1, Color.RED);
+            if(room.walkArea.length > 1){
+                drawer.moveTo(room.walkArea[0].x, room.walkArea[0].y);
 
-            for (pi in 1...room.walkArea.length){
-                drawer.lineTo(room.walkArea[pi].x, room.walkArea[pi].y);
+                for (pi in 1...room.walkArea.length){
+                    drawer.lineTo(room.walkArea[pi].x, room.walkArea[pi].y);
+                }
+                
+                drawer.lineTo(room.walkArea[0].x, room.walkArea[0].y);
             }
-
-            drawer.lineTo(room.walkArea[0].x, room.walkArea[0].y);
+        
+            // draw Nodes
+            drawer.lineStyle(1, Color.WHITE);
+            if(room.walkArea.length > 0){
+                for (pi in 0...room.walkArea.length){
+                    drawer.drawRect(room.walkArea[pi].x - 1, room.walkArea[pi].y - 1, 3, 3);
+                    if(!modifyExclusions && pi == activeNode ){
+                        drawer.drawRect(room.walkArea[pi].x - 2, room.walkArea[pi].y - 2, 5, 5);
+                    }
+                }
+            }
         }
 
-        // draw Nodes
-        drawer.lineStyle(1, Color.WHITE);
-        if(room.walkArea.length > 0){
-            for (pi in 0...room.walkArea.length){
-                drawer.drawRect(room.walkArea[pi].x - 1, room.walkArea[pi].y - 1, 3, 3);
-                if(pi == activeNode)
-                    drawer.drawRect(room.walkArea[pi].x - 2, room.walkArea[pi].y - 2, 5, 5);
+        if(drawExclusionArea){
+            for(ea_i in 0...room.exclusionAreas.length){
+                var exclusionArea: h2d.col.Polygon = room.exclusionAreas[ea_i];
+
+                // draw Lines
+                drawer.lineStyle(1, Color.BLUE);
+                if(exclusionArea.length > 1){
+                    drawer.moveTo(exclusionArea[0].x, exclusionArea[0].y);
+    
+                    for (pi in 1...exclusionArea.length){
+                        drawer.lineTo(exclusionArea[pi].x, exclusionArea[pi].y);
+                    }
+                    
+                    drawer.lineTo(exclusionArea[0].x, exclusionArea[0].y);
+                }
+                
+                // draw Nodes
+                drawer.lineStyle(1, Color.WHITE);
+                if(exclusionArea.length > 0){
+                    for (pi in 0...exclusionArea.length){
+                        drawer.drawRect(exclusionArea[pi].x - 1, exclusionArea[pi].y - 1, 3, 3);
+                        if(modifyExclusions && activeExclusion == ea_i && pi == activeNode){
+                            drawer.drawRect(exclusionArea[pi].x - 2, exclusionArea[pi].y - 2, 5, 5);
+                        }
+                    }
+                }
             }
         }
     }
 
-    private function placeNode(mouseX: Int, mouseY: Int, ?index: Int = 0){
+    private function placeNode(area: h2d.col.Polygon, mouseX: Int, mouseY: Int, ?index: Int = 0){
         var newPoint: h2d.col.Point = new h2d.col.Point(mouseX, mouseY);
-        if(room.walkArea.length <= 1 || index == room.walkArea.length - 1){
-            room.walkArea.push(newPoint);
+        if(area.length <= 1 || index == area.length - 1){
+            area.push(newPoint);
         }
         else{
-            room.walkArea.insert(index+1, newPoint);
+            area.insert(index+1, newPoint);
         }
 
         activeNode += 1;
-        activeNode = activeNode % room.walkArea.length;
+        activeNode = activeNode % area.length;
     }
 
     private function exportWalkArea(wa: h2d.col.Polygon){
@@ -184,6 +278,19 @@ class RoomEditor{
             exportedArea += '    {x: ${p.x}, y: ${p.y}},\n';
         }
         exportedArea += ']';
+        trace(exportedArea);
+    }
+
+    private function exportExclArea(eas: Array<h2d.col.Polygon>){
+        var exportedArea: String = "\n\nexclusionAreas: [\n";
+        for(ea in eas){
+            exportedArea += "    [\n";
+            for(p in ea){
+                exportedArea += '        {x: ${p.x}, y: ${p.y}},\n';
+            }
+            exportedArea += "    ],\n";
+        }
+        exportedArea += "]";
         trace(exportedArea);
     }
 }
