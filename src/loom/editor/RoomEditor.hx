@@ -13,6 +13,7 @@ enum RoomEditorMode {
     Select; // on, waiting mode select
 
     WalkArea;
+    RoomObjects;
 }
 
 
@@ -22,7 +23,6 @@ class RoomEditor{
     public var EDIT_MODE: RoomEditorMode = Inactive;
 
     public var drawer: h2d.Graphics;
-    public var textOutput: h2d.Text;
 
     public function new(room: Room){
         this.room = room;
@@ -49,23 +49,28 @@ class RoomEditor{
 
         switch(em){
             case Select: {
-                editMenuString += "======== EDITOR MODE ========\n";
-                editMenuString += "==== 1 : Edit Walk Area =====\n";
+                editMenuString += "========= EDITOR MODE =========\n";
+                editMenuString += "==== 1 : Edit Walk Area =======\n";
+                editMenuString += "==== 2 : Edit Room Objects ====\n";
             }
             
             case WalkArea: {
                 editMenuString += "===========  EDIT WALK AREA ===========\n";
+                editMenuString += "==== TAB         : Change Walk ========\n";
+                editMenuString += "====                 or Excl ==========\n";
                 editMenuString += "==== SPACE       : Export =============\n";
                 editMenuString += "==== SCROLL      : Change Nodes =======\n";
                 editMenuString += "==== R-CLICK     : Add Node ===========\n";
                 editMenuString += "==== L-CLICK     : Move Node ==========\n";
                 editMenuString += "==== BACKSPACE   : Remove Node ========\n";
-                editMenuString += "==== TAB         : Change Walk ========\n";
-                editMenuString += "====                 or Excl ==========\n";
                 editMenuString += "==== SHIFT+ ===========================\n";
                 editMenuString += "====   R-CLICK   : Add Excl Area ======\n";
                 editMenuString += "====   SCROLL    : Change Excl Area ===\n";
                 editMenuString += "====   BACKSPACE : Remove Excl Area ===\n";
+            }
+            
+            case RoomObjects: {
+                editMenuString += "=========  EDIT ROOM OBJECTS =========\n";
             }
 
             default: return;
@@ -80,8 +85,9 @@ class RoomEditor{
 
     public function update(dt: Float){
         switch (EDIT_MODE){
-            case Select:   update_SelectMode(dt);
-            case WalkArea: update_WalkAreaMode(dt);
+            case Select:      update_SelectMode(dt);
+            case WalkArea:    update_WalkAreaMode(dt);
+            case RoomObjects: update_RoomObjects(dt);
 
             default: return;
         }
@@ -91,23 +97,14 @@ class RoomEditor{
     // ============   SELECT   ============
     // ====================================
     
-    public function update_SelectMode(dt: Float){
-        if(Key.isDown(Key.NUMBER_1)){
-            changeEditMode(WalkArea);
-        }
+    private function update_SelectMode(dt: Float){
+        if(Key.isDown(Key.NUMBER_1)) changeEditMode(WalkArea); else
+        if(Key.isDown(Key.NUMBER_2)) changeEditMode(RoomObjects);
     }
     
     // =======================================
     // ============   WALK AREA   ============
     // =======================================
-
-    private function printEditMenu_WalkArea(){
-        var editMenuString: String = "\n\n";
-        editMenuString += "======== EDITOR MODE ========\n";
-        editMenuString += "==== 1 : Edit Walk Area =====\n";
-
-        trace(editMenuString);
-    }
 
     private var activeNode: Int = 0;
     private var modifyExclusions: Bool = false;
@@ -133,6 +130,9 @@ class RoomEditor{
         // modify exclusion areas
         if(modifyExclusions){ 
             if(Key.isPressed(Key.SPACE)){ // export
+                if(room.walkArea.isClockwise()){
+                    room.walkArea.reverse();
+                }
                 exportExclArea(room.exclusionAreas);
             }
             else if(Key.isDown(Key.SHIFT)){
@@ -293,4 +293,27 @@ class RoomEditor{
         exportedArea += "]";
         trace(exportedArea);
     }
+
+    // ==========================================
+    // ============   ROOM OBJECTS   ============
+    // ==========================================
+    
+    private function update_RoomObjects(dt: Float){
+        var mouseX: Int = Std.int(room.mouseX);
+        var mouseY: Int = Std.int(room.mouseY);
+        
+        drawer.clear();
+        
+        drawer.lineStyle(1, Color.WHITE);
+        // TODO probably better off to use a default cursor at some point
+        drawer.moveTo(mouseX+1, mouseY+1);
+        drawer.lineTo(mouseX+4, mouseY+1);
+        drawer.moveTo(mouseX+1, mouseY+1);
+        drawer.lineTo(mouseX+1, mouseY+4);
+        drawer.moveTo(mouseX  , mouseY+1);
+        drawer.lineTo(mouseX-3, mouseY+1);
+        drawer.moveTo(mouseX+1, mouseY  );
+        drawer.lineTo(mouseX+1, mouseY-3);
+    }
+
 }
