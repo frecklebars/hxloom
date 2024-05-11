@@ -23,7 +23,6 @@ class RoomEditor{
     public var EDIT_MODE: RoomEditorMode = Inactive;
 
     public var drawer: h2d.Graphics;
-
     public function new(room: Room){
         this.room = room;
         drawer = new h2d.Graphics();
@@ -51,7 +50,7 @@ class RoomEditor{
             case Select: {
                 editMenuString += "========= EDITOR MODE =========\n";
                 editMenuString += "==== 1 : Edit Walk Area =======\n";
-                editMenuString += "==== 2 : Edit Room Objects ====\n";
+                // editMenuString += "==== 2 : Edit Room Objects ====\n";
             }
             
             case WalkArea: {
@@ -87,7 +86,7 @@ class RoomEditor{
         switch (EDIT_MODE){
             case Select:      update_SelectMode(dt);
             case WalkArea:    update_WalkAreaMode(dt);
-            case RoomObjects: update_RoomObjects(dt);
+            // case RoomObjects: update_RoomObjects(dt);
 
             default: return;
         }
@@ -99,7 +98,7 @@ class RoomEditor{
     
     private function update_SelectMode(dt: Float){
         if(Key.isDown(Key.NUMBER_1)) changeEditMode(WalkArea); else
-        if(Key.isDown(Key.NUMBER_2)) changeEditMode(RoomObjects);
+        // if(Key.isDown(Key.NUMBER_2)) changeEditMode(RoomObjects);
     }
     
     // =======================================
@@ -297,23 +296,26 @@ class RoomEditor{
     // ==========================================
     // ============   ROOM OBJECTS   ============
     // ==========================================
+
+    // var editingActors: Bool = false;
+    // var activeObjectActor: Int = 0;
     
-    private function update_RoomObjects(dt: Float){
-        var mouseX: Int = Std.int(room.mouseX);
-        var mouseY: Int = Std.int(room.mouseY);
+    // private function update_RoomObjects(dt: Float){
+    //     var mouseX: Int = Std.int(room.mouseX);
+    //     var mouseY: Int = Std.int(room.mouseY);
         
-        drawer.clear();
+    //     drawer.clear();
         
-        drawer.lineStyle(1, Color.WHITE);
-        // TODO probably better off to use a default cursor at some point
-        drawer.moveTo(mouseX+1, mouseY+1);
-        drawer.lineTo(mouseX+4, mouseY+1);
-        drawer.moveTo(mouseX+1, mouseY+1);
-        drawer.lineTo(mouseX+1, mouseY+4);
-        drawer.moveTo(mouseX  , mouseY+1);
-        drawer.lineTo(mouseX-3, mouseY+1);
-        drawer.moveTo(mouseX+1, mouseY  );
-        drawer.lineTo(mouseX+1, mouseY-3);
-    }
+    //     drawer.lineStyle(1, Color.WHITE);
+    //     // TODO probably better off to use a default cursor at some point
+    //     drawer.moveTo(mouseX+1, mouseY+1);
+    //     drawer.lineTo(mouseX+4, mouseY+1);
+    //     drawer.moveTo(mouseX+1, mouseY+1);
+    //     drawer.lineTo(mouseX+1, mouseY+4);
+    //     drawer.moveTo(mouseX  , mouseY+1);
+    //     drawer.lineTo(mouseX-3, mouseY+1);
+    //     drawer.moveTo(mouseX+1, mouseY  );
+    //     drawer.lineTo(mouseX+1, mouseY-3);
+    // }
 
 }
