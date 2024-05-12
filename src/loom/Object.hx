@@ -19,6 +19,8 @@ class Object extends h2d.Object {
     public var enabled: Bool = true;
     public var updateable: Bool = false;
 
+    public var onChangeRoomCalls: Array<Room->Room->Void> = [];
+
     public function new(config: ObjectConfig){
         super();
         this.name = config.name;
@@ -34,11 +36,19 @@ class Object extends h2d.Object {
             sprite = new Sprite(this, config.sprite);
         }
     }
-
+    
+    public function changeRoom(room: Room){
+        var oldRoom: Room = this.room;
+        this.room = room;
+        onChangeRoom(room, oldRoom);
+    }
+    
     public function init(){};
     public function update(dt:Float){}
 
-    public function changeRoom(room: Room){
-        this.room = room;
+    public function onChangeRoom(newRoom: Room, oldRoom: Room){
+        for (call in onChangeRoomCalls){
+            call(newRoom, oldRoom);
+        }
     }
 }

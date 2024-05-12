@@ -33,7 +33,7 @@ class Room extends h2d.Scene {
     public var exclusionAreas: Array<h2d.col.Polygon> = [];
 
     #if debug
-    private var editor: RoomEditor;
+    public var editor: RoomEditor;
     #end
     
     public function new(config: RoomConfig){
@@ -52,7 +52,6 @@ class Room extends h2d.Scene {
         else{
             background = Background.fromColor(this, 0x000000, game.resolutionW, game.resolutionH);
         }
-        
         roomW = Std.int(background.tile.width);
         roomH = Std.int(background.tile.height);
             

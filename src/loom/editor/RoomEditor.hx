@@ -202,7 +202,7 @@ class RoomEditor{
         }
     }
 
-    private function drawArea(?drawWalkArea: Bool = true, ?drawExclusionArea: Bool = true){
+    public function drawArea(?drawWalkArea: Bool = true, ?drawExclusionArea: Bool = true, ?drawNodes: Bool = true){
         if(drawWalkArea){
             // draw Lines
             drawer.lineStyle(1, Color.RED);
@@ -217,12 +217,14 @@ class RoomEditor{
             }
         
             // draw Nodes
-            drawer.lineStyle(1, Color.WHITE);
-            if(room.walkArea.length > 0){
-                for (pi in 0...room.walkArea.length){
-                    drawer.drawRect(room.walkArea[pi].x - 1, room.walkArea[pi].y - 1, 3, 3);
-                    if(!modifyExclusions && pi == activeNode ){
-                        drawer.drawRect(room.walkArea[pi].x - 2, room.walkArea[pi].y - 2, 5, 5);
+            if(drawNodes){
+                drawer.lineStyle(1, Color.WHITE);
+                if(room.walkArea.length > 0){
+                    for (pi in 0...room.walkArea.length){
+                        drawer.drawRect(room.walkArea[pi].x - 1, room.walkArea[pi].y - 1, 3, 3);
+                        if(!modifyExclusions && pi == activeNode ){
+                            drawer.drawRect(room.walkArea[pi].x - 2, room.walkArea[pi].y - 2, 5, 5);
+                        }
                     }
                 }
             }
@@ -245,12 +247,14 @@ class RoomEditor{
                 }
                 
                 // draw Nodes
-                drawer.lineStyle(1, Color.WHITE);
-                if(exclusionArea.length > 0){
-                    for (pi in 0...exclusionArea.length){
-                        drawer.drawRect(exclusionArea[pi].x - 1, exclusionArea[pi].y - 1, 3, 3);
-                        if(modifyExclusions && activeExclusion == ea_i && pi == activeNode){
-                            drawer.drawRect(exclusionArea[pi].x - 2, exclusionArea[pi].y - 2, 5, 5);
+                if(drawNodes){
+                    drawer.lineStyle(1, Color.WHITE);
+                    if(exclusionArea.length > 0){
+                        for (pi in 0...exclusionArea.length){
+                            drawer.drawRect(exclusionArea[pi].x - 1, exclusionArea[pi].y - 1, 3, 3);
+                            if(modifyExclusions && activeExclusion == ea_i && pi == activeNode){
+                                drawer.drawRect(exclusionArea[pi].x - 2, exclusionArea[pi].y - 2, 5, 5);
+                            }
                         }
                     }
                 }
