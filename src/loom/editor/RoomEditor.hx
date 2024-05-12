@@ -97,7 +97,7 @@ class RoomEditor{
     // ====================================
     
     private function update_SelectMode(dt: Float){
-        if(Key.isDown(Key.NUMBER_1)) changeEditMode(WalkArea); else
+        if(Key.isDown(Key.NUMBER_1)) changeEditMode(WalkArea);
         // if(Key.isDown(Key.NUMBER_2)) changeEditMode(RoomObjects);
     }
     
