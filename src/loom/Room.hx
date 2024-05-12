@@ -26,6 +26,9 @@ class Room extends h2d.Scene {
     private var background: Background;
     private var entry: Map<String, loom.Point>;
 
+    public var roomW: Int;
+    public var roomH: Int;
+
     public var walkArea: h2d.col.Polygon = [];
     public var exclusionAreas: Array<h2d.col.Polygon> = [];
 
@@ -43,15 +46,16 @@ class Room extends h2d.Scene {
                 background = Background.fromPng(this, config.background.path);
             }
             else if(config.background.color != null){
-                background = Background.fromColor(
-                    this, 
-                    config.background.color,
-                    config.background.width,
-                    config.background.height
-                );
+                background = Background.fromColor(this, config.background.color, config.background.width, config.background.height);
             }
         }
-
+        else{
+            background = Background.fromColor(this, 0x000000, game.resolutionW, game.resolutionH);
+        }
+        
+        roomW = Std.int(background.tile.width);
+        roomH = Std.int(background.tile.height);
+            
         if(config.walkArea != null){
             for (p in config.walkArea){
                 this.walkArea.push(new h2d.col.Point(p.x, p.y));

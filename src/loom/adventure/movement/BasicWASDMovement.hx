@@ -1,6 +1,6 @@
 package loom.adventure.movement;
 
-using hxd.Key;
+import hxd.Key;
 
 class BasicWASDMovement implements Component{
     public var name: String;

@@ -1,7 +1,5 @@
 package loom;
 
-using loom.graphic.Sprite;
-
 typedef ActorConfig = {
     > loom.Object.ObjectConfig,
 

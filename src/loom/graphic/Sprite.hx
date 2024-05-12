@@ -1,6 +1,6 @@
 package loom.graphic;
 
-using aseprite.Aseprite;
+import aseprite.Aseprite;
 
 typedef SpriteConfig = {
     var path: String;
