@@ -45,3 +45,19 @@ function linesIntersect(cl:Class<Math>, p1: Point, p2: Point, q1: Point, q2: Poi
 
     return (r > 0 && r < 1) && (s > 0 && s < 1);
 }
+
+function getDirection(cl:Class<Math>, origin: Point, target: Point, shiftX: Float = 1, shiftY: Float = 1): Point{
+    var dir: Point = new Point(target.x - origin.x, target.y - origin.y);
+    
+    dir.x = dir.x * shiftY;
+    dir.y = dir.y * shiftX;
+
+    var mag: Float = Math.sqrt(dir.x * dir.x + dir.y * dir.y);
+
+    if(mag > 0){
+        dir.x = dir.x / mag;
+        dir.y = dir.y / mag;
+    }
+
+    return dir;
+}

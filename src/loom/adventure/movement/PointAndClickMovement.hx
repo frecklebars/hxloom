@@ -53,14 +53,18 @@ class AstarNode {
 }
 
 class PointAndClickMovement implements Component {
+    #if debug
+    public var DEBUG_DRAW: Bool = false;
+    #end
+
     public var name: String;
     public var parent: loom.Object;
 	public var enabled:Bool = true;
 
     private var room: loom.Room;
 
-    private var nodeSpacingW: Int = 6;
-    private var nodeSpacingH: Int = 6;
+    private var nodeSpacingW: Int = 3;
+    private var nodeSpacingH: Int = 3;
     private var nodesW: Int;
     private var nodesH: Int;
 
@@ -76,7 +80,13 @@ class PointAndClickMovement implements Component {
     private var path: Array<AstarNode> = [];
 
     public var walking: Bool = false;
-    public var speed: Float = 40;
+    public var speed: Float = 60;
+    public var speedModX: Float = 1;
+    public var speedModY: Float = 0.8;
+
+    private var reachedNextPoint: Bool = true;
+    private var nextWalkingPoint: Point;
+    public var walkingDirection: Point = new Point(0, 0);
     
     public function onChangeRoom(newRoom: loom.Room, oldRoom: loom.Room){
         if(!enabled) return;
@@ -209,10 +219,34 @@ class PointAndClickMovement implements Component {
         return neighbors;
     }
 
+    private function getGoal(mouseX: Float, mouseY: Float): Point{
+        var clickPoint: Point = new Point(mouseX, mouseY);
+    
+        if(room.walkArea.contains(clickPoint)){
+            for(ea in room.exclusionAreas){
+                if(ea.contains(clickPoint)){
+                    clickPoint = ea.projectPoint(clickPoint);
+                    clickPoint.x = Std.int(clickPoint.x);
+                    clickPoint.y = Std.int(clickPoint.y);
+                    return clickPoint;
+                }
+            }
+            clickPoint.x = Std.int(clickPoint.x);
+            clickPoint.y = Std.int(clickPoint.y);
+            return clickPoint;
+        }
+
+        clickPoint = room.walkArea.projectPoint(clickPoint);
+        clickPoint.x = Std.int(clickPoint.x);
+        clickPoint.y = Std.int(clickPoint.y);
+        return clickPoint;
+    }
+
     private function pathfind(goalX: Int, goalY: Int): Array<AstarNode> {
         visitedNodes = [];
-        
-        start = new AstarNode(graph.length, Std.int(parent.x), Std.int(parent.y));
+
+        // TODO late may want the startpoint to actually project to walkarea edges, if outside it
+        start = new AstarNode(graph.length, Std.int(parent.x), Std.int(parent.y)); 
         goal = new AstarNode(graph.length + 1, goalX, goalY);
         
         if(Math.pointsInLineOfSight([room.walkArea].concat(room.exclusionAreas), start.point, goal.point)){
@@ -290,17 +324,58 @@ class PointAndClickMovement implements Component {
         return path;
     }
 
+    
+    private function walkAlongPath(parent: loom.Object, path: Array<AstarNode>, dt: Float): Bool{
+        if(reachedNextPoint){
+            if(path.length > 0){
+                nextWalkingPoint = path.shift().point;
+                var parentPoint = new Point(parent.x, parent.y);
+                walkingDirection = Math.getDirection(parentPoint, nextWalkingPoint, speedModX, speedModY);
+                reachedNextPoint = walkToPoint(parent, nextWalkingPoint, dt);
+            }
+            else return false;
+        }
+        else{
+            reachedNextPoint = walkToPoint(parent, nextWalkingPoint, dt);
+        }
+
+        return true;
+    }
+
+    
+    private function walkToPoint(parent: loom.Object, point: Point, dt: Float): Bool{
+        var parentPoint: Point = new Point(parent.x, parent.y);
+        var distance = parentPoint.distanceSq(point);
+
+        if(distance <= 2){
+            return true;
+        }
+        else{
+            parent.x += (walkingDirection.x * speed * speedModX * dt);
+            parent.y += (walkingDirection.y * speed * speedModY * dt);
+        }
+
+        return false;
+    }
+
     public function init(){}
     public function update(dt:Float){
         #if debug
-        if(Key.isPressed(Key.R) && Key.isDown(Key.SHIFT)) makePathfindingGrid();
-        debugDraw(true, false, true); 
+        if(DEBUG_DRAW){
+            if(Key.isPressed(Key.W) && Key.isDown(Key.SHIFT)) makePathfindingGrid();
+            debugDraw(true, false, true); 
+        }
         #end
 
         if(Key.isPressed(Key.MOUSE_LEFT)){
-            path = pathfind(Std.int(room.mouseX), Std.int(room.mouseY));
-            parent.x = room.mouseX;
-            parent.y = room.mouseY;
+            var goalPoint: Point = getGoal(room.mouseX, room.mouseY);
+            path = pathfind(Std.int(goalPoint.x), Std.int(goalPoint.y));
+            walking = true;
+            reachedNextPoint = true;
+        }
+
+        if(walking){
+            walking = walkAlongPath(parent, path, dt);
         }
     }
     
