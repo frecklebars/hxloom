@@ -22,10 +22,13 @@ typedef Animation = {
 class Sprite extends aseprite.AseAnim{
     private var sprite: Aseprite;
     private var animations: Map<String, Animation> = [];
-
+    private var bitmap: h2d.Bitmap;
+    
     public var currentAnimation: String;
 
-    private var bitmap: h2d.Bitmap;
+    // width and height of the first frame in default animation
+    public var width(default, null): Float;
+    public var height(default, null): Float;
 
     public function new(parent: loom.Object, config: SpriteConfig){
         super(parent);
@@ -37,11 +40,17 @@ class Sprite extends aseprite.AseAnim{
     
             bitmap.tile.dx = -bitmap.tile.width / 2;
             bitmap.tile.dy = -bitmap.tile.height;
+
+            width = bitmap.tile.width;
+            height = bitmap.tile.height;
         }
         else{
             for(animationCfg in config.animations){
                 registerAnimation(animationCfg);
             }
+
+            width = animations[currentAnimation].frames[0].tile.width;
+            height = animations[currentAnimation].frames[0].tile.height;
         }
     }
 
