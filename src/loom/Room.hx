@@ -7,10 +7,10 @@ import loom.graphic.Background;
 
 typedef RoomConfig = {
     var name: String;
-    var entry: Map<String, loom.Point>; // player entry points: prevRoom name ("_" if none) and point. TODO add facing direction too
+    var entry: Map<String, loom.SimplePoint>; // player entry points: prevRoom name ("_" if none) and point. TODO add facing direction too
     
-    var ?walkArea: Array<loom.Point>;
-    var ?exclusionAreas: Array<Array<loom.Point>>;
+    var ?walkArea: Array<loom.SimplePoint>;
+    var ?exclusionAreas: Array<Array<loom.SimplePoint>>;
 
     var ?background: loom.graphic.Background.BackgroundConfig;
 }
@@ -24,7 +24,7 @@ class Room extends h2d.Scene {
     private var updateables: Array<loom.Object> = [];
     
     private var background: Background;
-    private var entry: Map<String, loom.Point>;
+    private var entry: Map<String, loom.SimplePoint>;
 
     public var roomW: Int;
     public var roomH: Int;
@@ -132,6 +132,13 @@ class Room extends h2d.Scene {
         updateables.remove(removedActor);
         
         return removedActor;
+    }
+
+    public function getObjects(): Map<String, Object>{
+        return _objects;
+    }
+    public function getActors(): Map<String, Actor>{
+        return _actors;
     }
 
     public function onEntry(){

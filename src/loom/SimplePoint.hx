@@ -1,6 +1,6 @@
 package loom;
 
-typedef Point = {
+typedef SimplePoint = {
     var x: Int;
     var y: Int;
 }

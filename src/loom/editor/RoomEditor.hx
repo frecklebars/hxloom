@@ -16,7 +16,6 @@ enum RoomEditorMode {
     RoomObjects;
 }
 
-
 class RoomEditor{
     private var room: Room;
 
@@ -50,11 +49,11 @@ class RoomEditor{
             case Select: {
                 editMenuString += "========= EDITOR MODE =========\n";
                 editMenuString += "==== 1 : Edit Walk Area =======\n";
-                // editMenuString += "==== 2 : Edit Room Objects ====\n";
+                editMenuString += "==== 2 : Edit Room Objects ====\n";
             }
             
             case WalkArea: {
-                editMenuString += "===========  EDIT WALK AREA ===========\n";
+                editMenuString += "============ EDIT WALK AREA ===========\n";
                 editMenuString += "==== TAB         : Change Walk ========\n";
                 editMenuString += "====                 or Excl ==========\n";
                 editMenuString += "==== SPACE       : Export =============\n";
@@ -69,7 +68,18 @@ class RoomEditor{
             }
             
             case RoomObjects: {
-                editMenuString += "=========  EDIT ROOM OBJECTS =========\n";
+                init_RoomObjects();
+                editMenuString += "============ EDIT ROOM OBJECTS ============\n";
+                editMenuString += "==== TAB       : Toggle Individual ========\n";
+                editMenuString += "==== I         : Draw Hitbox ==============\n";
+                editMenuString += "==== M         : Toggle Move ==============\n";
+                editMenuString += "==== M:L-CLICK   : Confirm Move ===========\n";
+                editMenuString += "==== H         : Toggle Hitbox Edit =======\n";
+                editMenuString += "==== H:SPACE     : Export Hitbox ==========\n";
+                editMenuString += "==== H:SCROLL    : Select Hitbox Nodes ====\n";
+                editMenuString += "==== H:R-CLICK   : Add Hitbox Node ========\n";
+                editMenuString += "==== H:L-CLICK   : Move Hitbox Node =======\n";
+                editMenuString += "==== H:BACKSPACE : Remove Hitbox Node =====\n";
             }
 
             default: return;
@@ -86,7 +96,7 @@ class RoomEditor{
         switch (EDIT_MODE){
             case Select:      update_SelectMode(dt);
             case WalkArea:    update_WalkAreaMode(dt);
-            // case RoomObjects: update_RoomObjects(dt);
+            case RoomObjects: update_RoomObjects(dt);
 
             default: return;
         }
@@ -98,7 +108,7 @@ class RoomEditor{
     
     private function update_SelectMode(dt: Float){
         if(Key.isDown(Key.NUMBER_1)) changeEditMode(WalkArea);
-        // if(Key.isDown(Key.NUMBER_2)) changeEditMode(RoomObjects);
+        if(Key.isDown(Key.NUMBER_2)) changeEditMode(RoomObjects);
     }
     
     // =======================================
@@ -301,25 +311,182 @@ class RoomEditor{
     // ============   ROOM OBJECTS   ============
     // ==========================================
 
-    // var editingActors: Bool = false;
-    // var activeObjectActor: Int = 0;
-    
-    // private function update_RoomObjects(dt: Float){
-    //     var mouseX: Int = Std.int(room.mouseX);
-    //     var mouseY: Int = Std.int(room.mouseY);
-        
-    //     drawer.clear();
-        
-    //     drawer.lineStyle(1, Color.WHITE);
-    //     // TODO probably better off to use a default cursor at some point
-    //     drawer.moveTo(mouseX+1, mouseY+1);
-    //     drawer.lineTo(mouseX+4, mouseY+1);
-    //     drawer.moveTo(mouseX+1, mouseY+1);
-    //     drawer.lineTo(mouseX+1, mouseY+4);
-    //     drawer.moveTo(mouseX  , mouseY+1);
-    //     drawer.lineTo(mouseX-3, mouseY+1);
-    //     drawer.moveTo(mouseX+1, mouseY  );
-    //     drawer.lineTo(mouseX+1, mouseY-3);
-    // }
+    private var individualToggle: Bool = false;
+    private var drawHitboxesToggle: Bool = true;
 
+    private var roomObjectEditModeToggles: Array<Bool> = [
+        false, // 0 : M : MOVE OBJECTS
+        false, // 1 : H : EDIT HITBOX
+    ];
+
+    private var interactives: Array<Object> = [];
+    private var activeInteract: Int = 0;
+    private var activeHitboxNode: Int = 0;
+
+    private function init_RoomObjects(){
+        for(itr in [room.getObjects().iterator(), room.getActors().iterator()]){
+            for(obj in itr){
+                if(obj.interact != null) interactives.push(obj);
+            }
+        }
+    }
+    
+    private function update_RoomObjects(dt: Float){
+        var mouseX: Int = Std.int(room.mouseX);
+        var mouseY: Int = Std.int(room.mouseY);
+        
+        drawer.clear();
+        
+        drawer.lineStyle(1, Color.WHITE);
+        // TODO probably better off to use a default cursor at some point
+        // looks cool for now tho
+        drawer.moveTo(mouseX+1, mouseY+1);
+        drawer.lineTo(mouseX+4, mouseY+1);
+        drawer.moveTo(mouseX+1, mouseY+1);
+        drawer.lineTo(mouseX+1, mouseY+4);
+        drawer.moveTo(mouseX  , mouseY+1);
+        drawer.lineTo(mouseX-3, mouseY+1);
+        drawer.moveTo(mouseX+1, mouseY  );
+        drawer.lineTo(mouseX+1, mouseY-3);
+
+        if(Key.isPressed(Key.TAB)){
+            disableObjectEditModeToggles();
+            individualToggle = !individualToggle;
+        }
+        if(Key.isPressed(Key.I)){
+            drawHitboxesToggle = !drawHitboxesToggle;
+        }
+        else if(Key.isPressed(Key.M)){
+            disableObjectEditModeToggles();
+            roomObjectEditModeToggles[0] = true;
+        }
+        else if(Key.isPressed(Key.H)){
+            disableObjectEditModeToggles();
+            roomObjectEditModeToggles[1] = true;
+        }
+        
+        // INDIVIDUAL
+        if(individualToggle){
+            if(drawHitboxesToggle) drawHitboxes([interactives[activeInteract]]);
+
+            if(roomObjectEditModeToggles[0]){
+                interactives[activeInteract].x = mouseX;
+                interactives[activeInteract].y = mouseY;
+
+                if(Key.isPressed(Key.MOUSE_LEFT)){
+                    trace('${interactives[activeInteract].name} position: {x: ${interactives[activeInteract].x}, y: ${interactives[activeInteract].y}}');
+                    roomObjectEditModeToggles[0] = false;
+                }
+            }
+            else if(roomObjectEditModeToggles[1]){
+                editObjectHitbox(interactives[activeInteract], mouseX, mouseY);
+            }
+
+            else if(Key.isPressed(Key.MOUSE_WHEEL_DOWN)){
+                activeInteract -= 1;
+                activeInteract = (activeInteract + interactives.length) % interactives.length;
+            }
+            else if(Key.isPressed(Key.MOUSE_WHEEL_UP)){
+                activeInteract += 1;
+                activeInteract = activeInteract % interactives.length;
+            }
+        }
+        // ALL
+        else{
+            if(drawHitboxesToggle) drawHitboxes(interactives);
+
+            if(roomObjectEditModeToggles[0]) roomObjectEditModeToggles[0] = false;
+            else if(roomObjectEditModeToggles[1]) roomObjectEditModeToggles[1] = false;
+        }
+        
+    }
+
+    private function editObjectHitbox(obj: Object, mouseX: Int, mouseY: Int){
+        if(!obj.interact.hasPolygonHitbox){
+            obj.interact.hasPolygonHitbox = true;
+        }
+
+        var polygon: Array<h2d.col.Point> = obj.interact.hitbox;
+
+        if(Key.isPressed(Key.MOUSE_RIGHT)){
+            // add node
+            placeNode(polygon, Std.int(mouseX - obj.x), Std.int(mouseY - obj.y), activeHitboxNode);
+        }
+        else if(polygon.length > 0){
+            if(Key.isPressed(Key.MOUSE_LEFT)){
+                polygon[activeHitboxNode].x = mouseX - obj.x;
+                polygon[activeHitboxNode].y = mouseY - obj.y;
+            }
+            else if(Key.isPressed(Key.BACKSPACE)){
+                polygon.remove(polygon[activeHitboxNode]);
+                if(activeHitboxNode == polygon.length) activeHitboxNode -= 1;
+            }
+            else if(Key.isPressed(Key.MOUSE_WHEEL_DOWN)){
+                activeHitboxNode -= 1;
+                activeHitboxNode = (activeHitboxNode + polygon.length) % polygon.length;
+            }
+            else if(Key.isPressed(Key.MOUSE_WHEEL_UP)){
+                activeHitboxNode += 1;
+                activeHitboxNode = activeHitboxNode % polygon.length;
+            }
+            else if(Key.isPressed(Key.SPACE)){
+                exportHitbox(polygon);
+            }
+        }
+    }
+
+    private function exportHitbox(polygon: Array<h2d.col.Point>){
+        var exportedPolygon: String = "\n\nhitbox: [\n";
+        for(p in polygon){
+            exportedPolygon += '    {x: ${p.x}, y: ${p.y}},\n';
+        }
+        exportedPolygon += ']';
+        trace(exportedPolygon);
+
+        disableObjectEditModeToggles();
+    }
+
+    private function disableObjectEditModeToggles(){
+        for(i in 0...roomObjectEditModeToggles.length) roomObjectEditModeToggles[i] = false;
+        activeHitboxNode = 0;
+    }
+
+    private function drawHitboxes(interactives: Array<Object>) {
+        
+        for(obj in interactives){
+            var interactive = obj.interact;
+            
+            drawer.lineStyle(1, Color.GREEN);
+            if(obj.interact.hasPolygonHitbox){
+                var polygon: Array<h2d.col.Point> = obj.interact.hitbox;
+
+                if(polygon.length > 0){   
+                    drawer.moveTo(obj.x + polygon[0].x, obj.y + polygon[0].y);
+                    for(pi in 1...polygon.length){
+                        var p = polygon[pi];
+                        drawer.lineTo(obj.x + p.x, obj.y + p.y);
+                    }
+                    drawer.lineTo(obj.x + polygon[0].x, obj.y + polygon[0].y);
+                }
+            }
+            else{
+                drawer.moveTo(obj.x - obj.interact.width / 2 + obj.interact.dx + 1, obj.y - obj.interact.height + obj.interact.dy + 1);
+                drawer.lineTo(obj.x + obj.interact.width / 2 + obj.interact.dx    , obj.y - obj.interact.height + obj.interact.dy + 1);
+                drawer.lineTo(obj.x + obj.interact.width / 2 + obj.interact.dx    , obj.y + obj.interact.dy);
+                drawer.lineTo(obj.x - obj.interact.width / 2 + obj.interact.dx + 1, obj.y + obj.interact.dy);
+                drawer.lineTo(obj.x - obj.interact.width / 2 + obj.interact.dx + 1, obj.y - obj.interact.height + obj.interact.dy + 1);
+            }
+            
+            if(obj.interact.hasPolygonHitbox) drawer.lineStyle(1, Color.RED);
+            else                              drawer.lineStyle(1, Color.MAGENTA);
+            drawer.moveTo(obj.x, obj.y-2);
+            drawer.lineTo(obj.x, obj.y+1);
+
+            // if editing hitbox, draw active node
+            if(roomObjectEditModeToggles[1] && obj.interact.hasPolygonHitbox && obj.interact.hitbox.length > 0){
+                drawer.lineStyle(1, Color.WHITE);
+                drawer.drawRect(obj.x + obj.interact.hitbox[activeHitboxNode].x - 1, obj.y + obj.interact.hitbox[activeHitboxNode].y - 1, 3, 3);
+            }
+        }
+    }
 }
